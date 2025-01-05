@@ -2,6 +2,7 @@
 #include <shiftreg.h>
 #include <gyroscope.h>
 #include <storage.h>
+#include <temperature.h>
 
 void setup()
 {
@@ -12,7 +13,8 @@ void setup()
     // Initialize modules
     //shiftreg::init();
     //gyroscope::init();
-    storage::init();
+    //storage::init();
+    temperature::init();
 
     //pinMode(15, INPUT);
 
@@ -24,6 +26,7 @@ void setup()
 
 void loop()
 {
+    temperature::loop();
     //Serial.println(digitalRead(15));
 
     //gyroscope::loop();
