@@ -1,18 +1,18 @@
 #include <Arduino.h>
 #include <shiftreg.h>
 #include <gyroscope.h>
-#include <memory.h>
+#include <storage.h>
 
 void setup()
 {
     Serial.begin();
-    delay(6000);
+    delay(5000);
     Serial.println("Starting");
 
     // Initialize modules
     //shiftreg::init();
     //gyroscope::init();
-    memory::init();
+    storage::init();
 
     //pinMode(15, INPUT);
 

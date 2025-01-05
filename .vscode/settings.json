@@ -2,6 +2,7 @@
     "FSharp.suggestGitignore": false,
     "files.associations": {
         ".fantomasignore": "ignore",
-        "random": "cpp"
+        "random": "cpp",
+        "memory": "cpp"
     }
 }
