@@ -6,4 +6,5 @@ namespace temperature
 {
     void init();
     void loop();
+    float getTemperature();
 }

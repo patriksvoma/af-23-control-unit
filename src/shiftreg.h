@@ -12,6 +12,6 @@ namespace shiftreg
     void set_motor_reverse(bool newValue);
     void set_motor_lo_speed(bool newValue);
     void set_motor_hi_speed(bool newValue);
-    void set_nc_1(bool newValue);
-    void set_nc_2(bool newValue);
+    void set_nc0(bool newValue);
+    void set_nc1(bool newValue);
 }

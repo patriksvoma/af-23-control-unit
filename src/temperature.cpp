@@ -15,6 +15,7 @@ namespace temperature
 
     void init();
     void loop();
+    float getTemperature();
 
     void init()
     {
@@ -40,5 +41,15 @@ namespace temperature
         {
             Serial.println("Error: Could not read temperature data");
         }
+    }
+
+    float getTemperature()
+    {
+        sensors.requestTemperatures(); // Send the command to get temperatures
+        // After we got the temperatures, we can print them here.
+        // We use the function ByIndex, and as an example get the temperature from the first sensor only.
+        float tempC = sensors.getTempCByIndex(0);
+
+        return tempC;
     }
 }
