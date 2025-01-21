@@ -24,6 +24,8 @@ void setup()
     temperature::init();
 
     pinMode(16, INPUT);
+    pinMode(26, INPUT);
+    pinMode(27, INPUT);
 
     //pinMode(10, OUTPUT);
     //analogWrite(10, 255);
@@ -285,6 +287,30 @@ void loop()
                     SerialBT.println("Invalid commandPart2!");
                 }
 
+            }
+            else if (commandPart1 == "BRAKE")
+            {
+                Serial.println("Command BRAKE..");
+
+                String commandPart2 = SerialBT.readString();
+
+                if (commandPart2 == "GET_PRESSURE;\r\n")
+                {
+                    Serial.println("Command GET_PRESSURE..");
+
+                    // TODO: Read the brake sensor properly
+                    int pressure = analogRead(26);
+
+                    Serial.print("Returning pressure: ");
+                    Serial.println(pressure);
+
+                    SerialBT.println(pressure);
+                }
+                else
+                {
+                    Serial.println("Invalid commandPart2!");
+                    SerialBT.println("Invalid commandPart2!");
+                }
             }
             else
             {
