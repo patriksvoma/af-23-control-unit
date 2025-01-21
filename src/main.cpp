@@ -12,7 +12,7 @@ void setup()
     Serial.println("Starting bluetooth");
 
     SerialBT.setName("AF-23");
-    SerialBT.setTimeout(50);
+    SerialBT.setTimeout(10);
     SerialBT.begin();
 
     Serial.println("Bluetooth started, waiting for connection. Starting modules.");
@@ -267,7 +267,7 @@ void loop()
 
                 String commandPart2 = SerialBT.readString();
 
-                if (commandPart2 == "GET_TEMP\r\n")
+                if (commandPart2 == "GET_TEMP;\r\n")
                 {
                     Serial.println("Command GET_TEMP..");
 
