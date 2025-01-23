@@ -3,6 +3,7 @@
 #include <gyroscope.h>
 #include <storage.h>
 #include <temperature.h>
+#include <brake_sensor.h>
 #include <steering_wheel.h>
 #include <SerialBT.h>
 
@@ -23,10 +24,10 @@ void setup()
     //gyroscope::init();
     //storage::init();
     temperature::init();
+    brakeSensor::init();
     steeringWheel::init();
 
     pinMode(16, INPUT);
-    pinMode(26, INPUT);
     pinMode(27, INPUT);
 
     //pinMode(10, OUTPUT);
@@ -300,8 +301,7 @@ void loop()
                 {
                     Serial.println("Command GET_PRESSURE..");
 
-                    // TODO: Read the brake sensor properly
-                    int pressure = analogRead(26);
+                    uint16_t pressure = brakeSensor::readPressureRaw();
 
                     Serial.print("Returning pressure: ");
                     Serial.println(pressure);

@@ -3,6 +3,8 @@
     "files.associations": {
         ".fantomasignore": "ignore",
         "random": "cpp",
-        "memory": "cpp"
+        "memory": "cpp",
+        "compare": "cpp",
+        "cstdint": "cpp"
     }
 }
