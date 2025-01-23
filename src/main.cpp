@@ -3,6 +3,7 @@
 #include <gyroscope.h>
 #include <storage.h>
 #include <temperature.h>
+#include <steering_wheel.h>
 #include <SerialBT.h>
 
 void setup()
@@ -22,6 +23,7 @@ void setup()
     //gyroscope::init();
     //storage::init();
     temperature::init();
+    steeringWheel::init();
 
     pinMode(16, INPUT);
     pinMode(26, INPUT);
@@ -305,6 +307,35 @@ void loop()
                     Serial.println(pressure);
 
                     SerialBT.println(pressure);
+                }
+                else
+                {
+                    Serial.println("Invalid commandPart2!");
+                    SerialBT.println("Invalid commandPart2!");
+                }
+            }
+            else if (commandPart1 == "STEERING_WHEEL")
+            {
+                Serial.println("Command STEERING_WHEEL..");
+
+                String commandPart2 = SerialBT.readString();
+
+                if (commandPart2 == "CHECK_CONNECTION;\r\n")
+                {
+                    Serial.println("Command CHECK_CONNECTION..");
+
+                    bool connected = steeringWheel::testConnection();
+
+                    if (connected)
+                    {
+                        Serial.println("Connection is valid");
+                        SerialBT.println(1);
+                    }
+                    else
+                    {
+                        Serial.println("Connection not valid");
+                        SerialBT.println(0);
+                    }
                 }
                 else
                 {
