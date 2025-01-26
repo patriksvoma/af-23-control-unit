@@ -1,11 +1,15 @@
 #include <Arduino.h>
+#include <SerialBT.h>
+
 #include <shiftreg.h>
 #include <gyroscope.h>
 #include <storage.h>
 #include <temperature.h>
 #include <brake_sensor.h>
 #include <steering_wheel.h>
-#include <SerialBT.h>
+#include <balancer.h>
+
+//#define BLUETOOTH_CONTROL
 
 void setup()
 {
@@ -26,6 +30,7 @@ void setup()
     temperature::init();
     brakeSensor::init();
     steeringWheel::init();
+    balancer::init();
 
     pinMode(16, INPUT);
     pinMode(27, INPUT);
@@ -38,6 +43,18 @@ void setup()
 
 void loop()
 {
+    if (Serial.available() > 0)
+    {
+        String command = Serial.readString();
+
+        if (command == "reb\r\n")
+        {
+            Serial.println("Rebooting");
+            rp2040.reboot();
+        }
+    }
+
+#ifdef BLUETOOTH_CONTROL
     if (SerialBT.availableForWrite())
     {
         while (SerialBT.available()) {
@@ -354,6 +371,7 @@ void loop()
     {
         Serial.println("Not connected!");
     }
+#endif
 
     //temperature::loop();
 

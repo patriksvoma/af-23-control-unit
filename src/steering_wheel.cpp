@@ -4,8 +4,8 @@
 
 #include <Arduino.h>
 
-#define WHEEL_TX 8
-#define WHEEL_RX 9
+#define UART1_TX 8
+#define UART1_RX 9
 
 namespace steeringWheel
 {
@@ -15,8 +15,8 @@ namespace steeringWheel
     /// @brief Initializes the steering wheel module
     void init()
     {
-        Serial2.setTX(WHEEL_TX);
-        Serial2.setRX(WHEEL_RX);
+        Serial2.setTX(UART1_TX);
+        Serial2.setRX(UART1_RX);
         Serial2.setTimeout(50);
         Serial2.begin(9600);
     }
