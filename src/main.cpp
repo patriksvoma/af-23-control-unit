@@ -8,6 +8,7 @@
 #include <brake_sensor.h>
 #include <steering_wheel.h>
 #include <balancer.h>
+#include <rtc.h>
 
 //#define BLUETOOTH_CONTROL
 
@@ -24,13 +25,15 @@ void setup()
     Serial.println("Bluetooth started, waiting for connection. Starting modules.");
 
     // Initialize modules
-    shiftreg::init();
+    //shiftreg::init();
     //gyroscope::init();
     //storage::init();
-    temperature::init();
-    brakeSensor::init();
-    steeringWheel::init();
-    balancer::init();
+    //temperature::init();
+    //brakeSensor::init();
+    //steeringWheel::init();
+    //balancer::init();
+    //rtc::init();
+
 
     pinMode(16, INPUT);
     pinMode(27, INPUT);
@@ -388,5 +391,5 @@ void loop()
     //shiftreg::set_nc0(true);
     //shiftreg::set_nc1(true);
 
-    delay(20);
+    delay(200);
 }
