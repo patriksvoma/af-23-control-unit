@@ -11,10 +11,10 @@
 #include <Adafruit_SPIFlash.h>
 #include "flash_config.h"
 
-#define SPI0_MOSI 3
-#define SPI0_MISO 0
-#define SPI0_SCK 2
-#define SPI0_CS 1
+#define SPI0_MOSI 19
+#define SPI0_MISO 16
+#define SPI0_SCK 18
+#define SPI0_CS 17
 
 #define BLOCK_SIZE 4096 // Block size in bytes
 #define FLASH_SIZE (4 * 1024 * 1024) // Flash size in bytes
