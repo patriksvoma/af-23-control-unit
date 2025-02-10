@@ -20,8 +20,8 @@ namespace shiftreg
     void set_motor_reverse(bool newValue);
     void set_motor_lo_speed(bool newValue);
     void set_motor_hi_speed(bool newValue);
-    void set_nc0(bool newValue);
-    void set_nc1(bool newValue);
+    void set_motor_fan(bool newValue);
+    void set_gpo_0(bool newValue);
     void write();
 
     // Variables for storing the current state of the outputs
@@ -32,8 +32,8 @@ namespace shiftreg
     bool motor_reverse;
     bool motor_lo_speed;
     bool motor_hi_speed;
-    bool nc_1; // Not connected
-    bool nc_2; // Not connected
+    bool motor_fan;
+    bool gpo_0;
 
     /// @brief Initializes the shift register module
     void init()
@@ -85,15 +85,15 @@ namespace shiftreg
         write();
     }
 
-    void set_nc0(bool newValue)
+    void set_motor_fan(bool newValue)
     {
-        nc_1 = newValue;
+        motor_fan = newValue;
         write();
     }
 
-    void set_nc1(bool newValue)
+    void set_gpo_0(bool newValue)
     {
-        nc_2 = newValue;
+        gpo_0 = newValue;
         write();
     }
 
@@ -107,8 +107,8 @@ namespace shiftreg
         bitWrite(mask, 3, !motor_reverse);
         bitWrite(mask, 4, !motor_lo_speed);
         bitWrite(mask, 5, !motor_hi_speed);
-        bitWrite(mask, 6, nc_1);
-        bitWrite(mask, 7, nc_2);
+        bitWrite(mask, 6, motor_fan);
+        bitWrite(mask, 7, gpo_0);
 
         digitalWrite(SIPO_LATCH, LOW);
 
