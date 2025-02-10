@@ -7,7 +7,7 @@
 
 #include <Arduino.h>
 
-#define SIPO_DATA 2
+#define SIPO_DATA 7
 #define SIPO_CLOCK 13
 #define SIPO_LATCH 12
 

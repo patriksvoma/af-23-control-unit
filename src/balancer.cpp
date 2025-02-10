@@ -187,7 +187,7 @@ namespace balancer
             else
             {
                 Serial.println("Checksum does not match");
-                return;
+                
             }
 
             // Print out the data

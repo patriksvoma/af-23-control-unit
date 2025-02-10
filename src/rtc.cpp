@@ -14,6 +14,7 @@
 namespace rtc
 {
     void init();
+    void printOut();
 
     uRTCLib rtc(0x68);
     char daysOfTheWeek[7][12] = {"Nedele", "Pondeli", "Utery", "Streda", "Ctvrtek", "Patek", "Sobota"};
@@ -29,6 +30,7 @@ namespace rtc
         //rtc.set(0, 35, 20, URTCLIB_WEEKDAY_MONDAY, 27, 1, 25);
     }
 
+    /// @brief Prints out data from the RTC module
     void printOut()
     {
         // Read out the data

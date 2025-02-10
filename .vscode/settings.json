@@ -5,6 +5,7 @@
         "random": "cpp",
         "memory": "cpp",
         "compare": "cpp",
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "cmath": "cpp"
     }
 }

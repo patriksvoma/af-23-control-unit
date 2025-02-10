@@ -9,8 +9,9 @@
 #include <steering_wheel.h>
 #include <balancer.h>
 #include <rtc.h>
+#include <Wire.h>
 
-//#define BLUETOOTH_CONTROL
+#define BLUETOOTH_CONTROL
 
 void setup()
 {
@@ -25,7 +26,7 @@ void setup()
     Serial.println("Bluetooth started, waiting for connection. Starting modules.");
 
     // Initialize modules
-    //shiftreg::init();
+    shiftreg::init();
     //gyroscope::init();
     //storage::init();
     //temperature::init();
@@ -33,10 +34,13 @@ void setup()
     //steeringWheel::init();
     //balancer::init();
     //rtc::init();
+    //compass::init();
 
+    //pinMode(16, INPUT);
+    //pinMode(27, INPUT);
 
-    pinMode(16, INPUT);
-    pinMode(27, INPUT);
+    //pinMode(10, OUTPUT);
+    //pinMode(28, INPUT);
 
     //pinMode(10, OUTPUT);
     //analogWrite(10, 255);
@@ -244,6 +248,7 @@ void loop()
                     else
                     {
                         // TODO: Set analog brake correctly
+                        analogWrite(14, newBrakeVal);
                         Serial.print("ANALOG_BRAKE set to ");
                         Serial.print(commandPart3);
                         SerialBT.print("ANALOG_BRAKE set to ");
@@ -381,6 +386,7 @@ void loop()
     //Serial.println(digitalRead(16));
 
     //gyroscope::loop();
+    //rtc::printOut();
 
     //shiftreg::set_motor_pwr(true);
     //shiftreg::set_motor_foot_sw(true);
