@@ -14,6 +14,14 @@
 namespace rtc
 {
     void init();
+    void refresh();
+    uint8_t getYear();
+    uint8_t getMonth();
+    uint8_t getDay();
+    uint8_t getHour();
+    uint8_t getMinute();
+    uint8_t getSecond();
+    uint8_t getDayOfWeek();
     void printOut();
 
     uRTCLib rtc(0x68);
@@ -30,6 +38,57 @@ namespace rtc
         //rtc.set(0, 35, 20, URTCLIB_WEEKDAY_MONDAY, 27, 1, 25);
     }
 
+    /// @brief Refreshes the RTC data
+    void refresh()
+    {
+        rtc.refresh();
+    }
+
+    /// @brief Gets the current year
+    /// @return Last two digits of the year
+    uint8_t getYear()
+    {
+        return rtc.year();
+    }
+
+    /// @brief Gets the current month
+    uint8_t getMonth()
+    {
+        return rtc.month();
+    }
+
+    /// @brief Gets the current day
+    uint8_t getDay()
+    {
+        return rtc.day();
+    }
+
+    /// @brief Gets the current hour
+    uint8_t getHour()
+    {
+        return rtc.hour();
+    }
+
+    /// @brief Gets the current minute
+    uint8_t getMinute()
+    {
+        return rtc.minute();
+    }
+
+    /// @brief Gets the current second
+    uint8_t getSecond()
+    {
+        return rtc.second();
+    }
+
+    /// @brief Gets the day of the week
+    /// @return Index of the day of week, starting from sunday
+    uint8_t getDayOfWeek()
+    {
+        return rtc.dayOfWeek();
+    }
+
+    // TODO: Remove
     /// @brief Prints out data from the RTC module
     void printOut()
     {

@@ -8,5 +8,7 @@
 namespace motor
 {
     void init();
-    void setBrake(uint8_t value);
+    void setMotorBrake(uint8_t value);
+    bool getHallSignal();
+    uint16_t getThrottle();
 }

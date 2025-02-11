@@ -14,6 +14,9 @@ namespace gyroscope
     Adafruit_MPU6050 mpu;
 
     void init();
+    sensors_event_t getAcceleration();
+    sensors_event_t getRotation();
+    sensors_event_t getTemperature();
     void loop();
 
     /// @brief Initializes the gyroscope module
@@ -28,6 +31,40 @@ namespace gyroscope
         mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
     }
 
+    /// @brief Gets the current acceleration of the sensor
+    /// @return Sensor event
+    sensors_event_t getAcceleration()
+    {
+        sensors_event_t acceleration, rotation, temp;
+
+        mpu.getEvent(&acceleration, &rotation, &temp);
+
+        return acceleration;
+    }
+
+    /// @brief Gets the current rotation of the sensor
+    /// @return Sensor event
+    sensors_event_t getRotation()
+    {
+        sensors_event_t acceleration, rotation, temp;
+
+        mpu.getEvent(&acceleration, &rotation, &temp);
+
+        return rotation;
+    }
+
+    /// @brief Gets the current temperature of the sensor
+    /// @return Sensor event
+    sensors_event_t getTemperature()
+    {
+        sensors_event_t acceleration, rotation, temp;
+
+        mpu.getEvent(&acceleration, &rotation, &temp);
+
+        return temp;
+    }
+
+    // TODO: Remove
     void loop()
     {
         sensors_event_t a, g, temp;

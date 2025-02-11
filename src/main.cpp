@@ -4,17 +4,22 @@
 #include <shiftreg.h>
 #include <motor.h>
 #include <gpio.h>
-
 #include <gyroscope.h>
+#include <brake_sensor.h>
+#include <rtc.h>
+
 #include <storage.h>
 #include <temperature.h>
-#include <brake_sensor.h>
 #include <steering_wheel.h>
 #include <balancer.h>
-#include <rtc.h>
 #include <Wire.h>
 
 #define BLUETOOTH_CONTROL
+
+#ifdef BLUETOOTH_CONTROL
+ulong lastBTSendTimestamp;
+ulong btSendDelay = 100;
+#endif
 
 void setup()
 {
@@ -32,14 +37,14 @@ void setup()
     shiftreg::init();
     motor::init();
     gpio::init();
-    
-    //gyroscope::init();
+    gyroscope::init();
+    brakeSensor::init();
+    rtc::init();
+
     //storage::init();
     //temperature::init();
-    //brakeSensor::init();
     //steeringWheel::init();
     //balancer::init();
-    //rtc::init();
 
     Serial.println("Module setup finished");
 }
@@ -172,7 +177,7 @@ void loop()
                 Serial.println(commandValue);
 
                 // The value will always be a valid number
-                motor::setBrake(commandValue);
+                motor::setMotorBrake(commandValue);
 
                 break;
             
@@ -213,6 +218,61 @@ void loop()
     {
         Serial.println("Not connected!");
     }
+
+    if (millis() > lastBTSendTimestamp + btSendDelay && SerialBT.availableForWrite())
+    {
+        Serial.println("Sending data..");
+
+        // Start byte
+        SerialBT.write(0xDD);
+
+        // Gyroscope data
+        sensors_event_t gyroAcceleration, gyroRotation, gyroTemp;
+        gyroAcceleration = gyroscope::getAcceleration();
+        gyroRotation = gyroscope::getRotation();
+        gyroTemp = gyroscope::getTemperature();
+
+        SerialBT.write((uint8_t)gyroAcceleration.acceleration.x);
+        SerialBT.write((uint8_t)gyroAcceleration.acceleration.y);
+        SerialBT.write((uint8_t)gyroAcceleration.acceleration.z);
+
+        SerialBT.write((uint8_t)gyroRotation.gyro.x);
+        SerialBT.write((uint8_t)gyroRotation.gyro.y);
+        SerialBT.write((uint8_t)gyroRotation.gyro.z);
+
+        SerialBT.write((uint8_t)gyroTemp.temperature);
+
+        // Motor data
+        SerialBT.write((uint8_t)motor::getHallSignal());
+        SerialBT.write((uint8_t)map(motor::getThrottle(), 0, 1023, 0, 255));
+
+        // Brake pressure
+        SerialBT.write((uint8_t)brakeSensor::readPressureBar());
+
+        // Temperatures
+        SerialBT.write(0xFF);
+        SerialBT.write(0xFF);
+
+        // Flash memory test
+        SerialBT.write(0xFF);
+
+        // Steering wheel connected
+        SerialBT.write(0xFF);
+
+        // RTC data
+        rtc::refresh();
+        SerialBT.write(rtc::getYear());
+        SerialBT.write(rtc::getMonth());
+        SerialBT.write(rtc::getDay());
+        SerialBT.write(rtc::getHour());
+        SerialBT.write(rtc::getMinute());
+        SerialBT.write(rtc::getSecond());
+        SerialBT.write(rtc::getDayOfWeek());
+
+        Serial.println("Data sent");
+        lastBTSendTimestamp = millis();
+    }
+
 #endif
 
     delay(10);
