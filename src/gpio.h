@@ -3,6 +3,8 @@
     Used for the GPO, GPI pins
 */
 
+#include <Arduino.h>
+
 namespace gpio
 {
     void init();

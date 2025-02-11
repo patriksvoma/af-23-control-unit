@@ -8,6 +8,7 @@
 #include <brake_sensor.h>
 #include <rtc.h>
 #include <bms.h>
+#include <gpio.h>
 
 #include <storage.h>
 #include <temperature.h>
@@ -17,6 +18,8 @@
 #define BLUETOOTH_CONTROL
 
 #ifdef BLUETOOTH_CONTROL
+
+#define FAKE_BMS_REPORT
 ulong lastBTSendTimestamp;
 ulong btSendDelay = 250;
 #endif
@@ -41,6 +44,7 @@ void setup()
     brakeSensor::init();
     rtc::init();
     bms::init();
+    gpio::init();
 
     //storage::init();
     //temperature::init();
@@ -275,6 +279,9 @@ void loop()
         SerialBT.write(rtc::getDayOfWeek());
 
         // BMS data
+#ifdef FAKE_BMS_REPORT
+        for (int i = 0; i < 8; i++) SerialBT.write(0xFF);
+#else
         bms::sendReceiveBasicInfo();
         SerialBT.write((uint8_t)(bms::basicInfo.totalVoltage >> 8));
         SerialBT.write((uint8_t)(bms::basicInfo.totalVoltage & 0xFF));
@@ -287,6 +294,12 @@ void loop()
 
         SerialBT.write((uint8_t)(bms::basicInfo.remainingCapacity >> 8));
         SerialBT.write((uint8_t)(bms::basicInfo.remainingCapacity & 0xFF));
+#endif
+
+        // GPI
+        SerialBT.write((uint8_t)gpio::read(0));
+        SerialBT.write((uint8_t)gpio::read(1));
+        SerialBT.write((uint8_t)gpio::read(2));
 
         Serial.println("Data sent");
         lastBTSendTimestamp = millis();
