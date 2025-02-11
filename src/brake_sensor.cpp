@@ -25,8 +25,8 @@ namespace brakeSensor
     /// @return ADC reading, always scaled to 12 bits!
     uint16_t readPressureRaw()
     {
-        uint16_t pressure = map(analogRead(SENSOR_PIN), 0, 2 ^ ADC_RES, 0, 4095);
-
+        uint16_t pressure = map(analogRead(SENSOR_PIN), 0, (1 << ADC_RES) - 1, 0, 4095);
+        
         return pressure;
     }
 

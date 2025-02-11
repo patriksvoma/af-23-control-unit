@@ -18,7 +18,7 @@
 
 #ifdef BLUETOOTH_CONTROL
 ulong lastBTSendTimestamp;
-ulong btSendDelay = 100;
+ulong btSendDelay = 250;
 #endif
 
 void setup()
@@ -244,10 +244,15 @@ void loop()
 
         // Motor data
         SerialBT.write((uint8_t)motor::getHallSignal());
-        SerialBT.write((uint8_t)map(motor::getThrottle(), 0, 1023, 0, 255));
+
+        uint16_t throttleValue = motor::getThrottle();
+        SerialBT.write((uint8_t)(throttleValue >> 8));
+        SerialBT.write((uint8_t)(throttleValue & 0xFF));
 
         // Brake pressure
-        SerialBT.write((uint8_t)brakeSensor::readPressureBar());
+        uint16_t brakePressure = brakeSensor::readPressureRaw();
+        SerialBT.write((uint8_t)(brakePressure >> 8));
+        SerialBT.write((uint8_t)(brakePressure & 0xFF));
 
         // Temperatures
         SerialBT.write(0xFF);
