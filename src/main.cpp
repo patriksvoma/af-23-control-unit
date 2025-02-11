@@ -7,11 +7,11 @@
 #include <gyroscope.h>
 #include <brake_sensor.h>
 #include <rtc.h>
+#include <bms.h>
 
 #include <storage.h>
 #include <temperature.h>
 #include <steering_wheel.h>
-#include <balancer.h>
 #include <Wire.h>
 
 #define BLUETOOTH_CONTROL
@@ -40,11 +40,11 @@ void setup()
     gyroscope::init();
     brakeSensor::init();
     rtc::init();
+    bms::init();
 
     //storage::init();
     //temperature::init();
     //steeringWheel::init();
-    //balancer::init();
 
     Serial.println("Module setup finished");
 }
@@ -268,6 +268,20 @@ void loop()
         SerialBT.write(rtc::getMinute());
         SerialBT.write(rtc::getSecond());
         SerialBT.write(rtc::getDayOfWeek());
+
+        // BMS data
+        bms::sendReceiveBasicInfo();
+        SerialBT.write((uint8_t)(bms::basicInfo.totalVoltage >> 8));
+        SerialBT.write((uint8_t)(bms::basicInfo.totalVoltage & 0xFF));
+
+        SerialBT.write((uint8_t)(bms::basicInfo.current >> 8));
+        SerialBT.write((uint8_t)(bms::basicInfo.current & 0xFF));
+
+        SerialBT.write((uint8_t)(bms::basicInfo.nominalCapacity >> 8));
+        SerialBT.write((uint8_t)(bms::basicInfo.nominalCapacity & 0xFF));
+
+        SerialBT.write((uint8_t)(bms::basicInfo.remainingCapacity >> 8));
+        SerialBT.write((uint8_t)(bms::basicInfo.remainingCapacity & 0xFF));
 
         Serial.println("Data sent");
         lastBTSendTimestamp = millis();

@@ -1,5 +1,5 @@
 /*
-    Balancer communication module
+    BMS communication module
 
     Communicates with JBD-DP24S002 using UART
 
@@ -11,7 +11,7 @@
 #define UART0_TX 0
 #define UART0_RX 1
 
-namespace balancer
+namespace bms
 {
     void init();
     void sendReceiveBasicInfo();
@@ -22,7 +22,7 @@ namespace balancer
     {
         public:
         uint16_t totalVoltage = 0; // Total voltage of the battery pack. Unit: 1 mV
-        uint16_t current; // Current current?? Unit: 1 mA
+        uint16_t current; // Current current Unit: 1 mA
         uint16_t remainingCapacity; // Remaining capacity of the battery pack. Unit: 1 mAh
         uint16_t nominalCapacity; // Nominal capacity of the battery pack. Unit: 1 mAh
         uint16_t cycles; // Number of completed cycles (1 cycle is a complete charge and discharge)
@@ -108,6 +108,8 @@ namespace balancer
         }
     };
 
+    BasicInfo basicInfo = BasicInfo();
+
     /// @brief Initializes the balancer module
     void init()
     {
@@ -115,9 +117,6 @@ namespace balancer
         Serial1.setRX(UART0_RX);
         Serial1.setTimeout(50);
         Serial1.begin(9600, SERIAL_8N1);
-   
-        // TODO: Remove
-        sendReceiveBasicInfo();
     }
 
     /// @brief Sends the "Basic info" command and receives the response
@@ -204,7 +203,6 @@ namespace balancer
             Serial.println("BMS data received");
             
             // Read the values from the data content
-            BasicInfo basicInfo;
             basicInfo.process(recDataContent);
             basicInfo.printOut();
 
