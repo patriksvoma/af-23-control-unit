@@ -21,7 +21,7 @@
 
 #define FAKE_BMS_REPORT
 ulong lastBTSendTimestamp;
-ulong btSendDelay = 250;
+ulong btSendDelay = 100;
 #endif
 
 void setup()
@@ -230,45 +230,51 @@ void loop()
         // Start byte
         SerialBT.write(0xDD);
 
-        // Gyroscope data
+        // Gyroscope data (28)
         sensors_event_t gyroAcceleration, gyroRotation, gyroTemp;
         gyroAcceleration = gyroscope::getAcceleration();
         gyroRotation = gyroscope::getRotation();
         gyroTemp = gyroscope::getTemperature();
 
-        SerialBT.write((uint8_t)gyroAcceleration.acceleration.x);
-        SerialBT.write((uint8_t)gyroAcceleration.acceleration.y);
-        SerialBT.write((uint8_t)gyroAcceleration.acceleration.z);
+        SerialBT.write((uint8_t*)&gyroAcceleration.acceleration.x, 4);
+        SerialBT.write((uint8_t*)&gyroAcceleration.acceleration.y, 4);
+        SerialBT.write((uint8_t*)&gyroAcceleration.acceleration.z, 4);
 
-        SerialBT.write((uint8_t)gyroRotation.gyro.x);
-        SerialBT.write((uint8_t)gyroRotation.gyro.y);
-        SerialBT.write((uint8_t)gyroRotation.gyro.z);
+        SerialBT.write((uint8_t*)&gyroRotation.gyro.x, 4);
+        SerialBT.write((uint8_t*)&gyroRotation.gyro.y, 4);
+        SerialBT.write((uint8_t*)&gyroRotation.gyro.z, 4);
 
-        SerialBT.write((uint8_t)gyroTemp.temperature);
+        SerialBT.write((uint8_t*)&gyroTemp.temperature, 4);
 
-        // Motor data
+        // Motor data (3)
         SerialBT.write((uint8_t)motor::getHallSignal());
 
         uint16_t throttleValue = motor::getThrottle();
         SerialBT.write((uint8_t)(throttleValue >> 8));
         SerialBT.write((uint8_t)(throttleValue & 0xFF));
 
-        // Brake pressure
+        // Brake pressure (2)
         uint16_t brakePressure = brakeSensor::readPressureRaw();
         SerialBT.write((uint8_t)(brakePressure >> 8));
         SerialBT.write((uint8_t)(brakePressure & 0xFF));
 
-        // Temperatures
+        // Temperatures (8)
+        SerialBT.write(0xFF);
+        SerialBT.write(0xFF);
+        SerialBT.write(0xFF);
+        SerialBT.write(0xFF);
+        SerialBT.write(0xFF);
+        SerialBT.write(0xFF);
         SerialBT.write(0xFF);
         SerialBT.write(0xFF);
 
-        // Flash memory test
+        // Flash memory test (1)
         SerialBT.write(0xFF);
 
-        // Steering wheel connected
+        // Steering wheel connected (1)
         SerialBT.write(0xFF);
 
-        // RTC data
+        // RTC data (7)
         rtc::refresh();
         SerialBT.write(rtc::getYear());
         SerialBT.write(rtc::getMonth());
@@ -278,7 +284,7 @@ void loop()
         SerialBT.write(rtc::getSecond());
         SerialBT.write(rtc::getDayOfWeek());
 
-        // BMS data
+        // BMS data (8)
 #ifdef FAKE_BMS_REPORT
         for (int i = 0; i < 8; i++) SerialBT.write(0xFF);
 #else
@@ -296,7 +302,7 @@ void loop()
         SerialBT.write((uint8_t)(bms::basicInfo.remainingCapacity & 0xFF));
 #endif
 
-        // GPI
+        // GPI (3)
         SerialBT.write((uint8_t)gpio::read(0));
         SerialBT.write((uint8_t)gpio::read(1));
         SerialBT.write((uint8_t)gpio::read(2));
