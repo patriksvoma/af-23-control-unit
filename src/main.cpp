@@ -10,6 +10,7 @@
 #include <bms.h>
 #include <gpio.h>
 #include <indicator_led.h>
+#include <spoiler_led.h>
 
 #include <storage.h>
 #include <temperature.h>
@@ -47,6 +48,7 @@ void setup()
     bms::init();
     gpio::init();
     indicatorLed::init();
+    spoilerLed::init();
 
     //storage::init();
     //temperature::init();
@@ -218,6 +220,22 @@ void loop()
                     if (commandValue == 0) indicatorLed::writeDigital(false);
                     else if (commandValue == 1) indicatorLed::writeDigital(true);
                     else Serial.println("Invalid command value");
+    
+                    break;
+            
+            case 0x13:
+                    Serial.println("Spoiler LED");
+                    
+                    commandValue = SerialBT.read();
+                    Serial.println(commandValue);
+    
+                    if (commandValue > 8)
+                    {
+                        Serial.println("Invalid command value");
+                        break;
+                    }
+
+                    spoilerLed::setAnimation(commandValue);
     
                     break;
             
