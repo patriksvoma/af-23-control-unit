@@ -5,7 +5,7 @@
 #include <Arduino.h>
 
 #define SENSOR_PIN 26
-#define ADC_RES 10 // ADC resolution, default is 10 bits (0-1023), maximum is 12 bits (0-4095)
+#define ADC_RES 12 // ADC resolution, default is 10 bits (0-1023), maximum is 12 bits (0-4095)
 
 namespace brakeSensor
 {
