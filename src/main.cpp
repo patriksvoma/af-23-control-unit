@@ -9,6 +9,7 @@
 #include <rtc.h>
 #include <bms.h>
 #include <gpio.h>
+#include <indicator_led.h>
 
 #include <storage.h>
 #include <temperature.h>
@@ -45,6 +46,7 @@ void setup()
     rtc::init();
     bms::init();
     gpio::init();
+    indicatorLed::init();
 
     //storage::init();
     //temperature::init();
@@ -206,6 +208,18 @@ void loop()
                 gpio::writeAnalog(2, commandValue);
 
                 break;
+            
+            case 0x12:
+                    Serial.println("Indicator LED");
+                    
+                    commandValue = SerialBT.read();
+                    Serial.println(commandValue);
+    
+                    if (commandValue == 0) indicatorLed::writeDigital(false);
+                    else if (commandValue == 1) indicatorLed::writeDigital(true);
+                    else Serial.println("Invalid command value");
+    
+                    break;
             
             default:
                 Serial.println("Unknown command code");
