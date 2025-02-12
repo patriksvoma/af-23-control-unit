@@ -191,9 +191,8 @@ void loop()
                 commandValue = SerialBT.read();
                 Serial.println(commandValue);
 
-                if (commandValue == 0) gpio::write(1, false);
-                else if (commandValue == 1) gpio::write(1, true);
-                else Serial.println("Invalid command value");
+                // The value will always be a valid number
+                gpio::writeAnalog(1, commandValue);
 
                 break;
             
@@ -203,9 +202,8 @@ void loop()
                 commandValue = SerialBT.read();
                 Serial.println(commandValue);
 
-                if (commandValue == 0) gpio::write(2, false);
-                else if (commandValue == 1) gpio::write(2, true);
-                else Serial.println("Invalid command value");
+                // The value will always be a valid number
+                gpio::writeAnalog(2, commandValue);
 
                 break;
             

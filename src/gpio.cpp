@@ -17,7 +17,8 @@
 namespace gpio
 {
     void init();
-    void write(uint8_t gpo, bool value);
+    void writeDigital(uint8_t gpo, bool value);
+    void writeAnalog(uint8_t gpo, uint8_t value);
     bool read(uint8_t gpi);
 
     /// @brief Initializes the GPIO module
@@ -35,11 +36,21 @@ namespace gpio
 
     /// @brief Writes to a GPO pin
     /// @param gpo GPO pin number (1-2), if an invalid pin is requested, nothing happens
-    /// @param value bool
-    void write(uint8_t gpo, bool value)
+    /// @param value Digital value
+    void writeDigital(uint8_t gpo, bool value)
     {
         if (gpo == 1) digitalWrite(GPO_1, value);
         else if (gpo == 2) digitalWrite(GPO_2, value);
+        else return;
+    }
+
+    /// @brief Writes to a GPO pin
+    /// @param gpo GPO pin number (1-2), if an invalid pin is requested, nothing happens
+    /// @param value Analog value (0-255)
+    void writeAnalog(uint8_t gpo, uint8_t value)
+    {
+        if (gpo == 1) analogWrite(GPO_1, value);
+        else if (gpo == 2) analogWrite(GPO_2, value);
         else return;
     }
 

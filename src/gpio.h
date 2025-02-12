@@ -8,6 +8,7 @@
 namespace gpio
 {
     void init();
-    void write(uint8_t gpo, bool value);
+    void writeDigital(uint8_t gpo, bool value);
+    void writeAnalog(uint8_t gpo, uint8_t value);
     bool read(uint8_t gpi);
 }
