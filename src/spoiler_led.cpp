@@ -7,7 +7,7 @@
 #include <FastLED.h>
 
 #define LED_DATA 2
-#define LED_COUNT 2
+#define LED_COUNT 42
 
 namespace spoilerLed
 {

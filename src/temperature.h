@@ -5,6 +5,6 @@
 namespace temperature
 {
     void init();
-    void loop();
-    float getTemperature();
+    void search();
+    float readTemperature(uint8_t sensorId);
 }

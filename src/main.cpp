@@ -11,9 +11,9 @@
 #include <gpio.h>
 #include <indicator_led.h>
 #include <spoiler_led.h>
+#include <temperature.h>
 
 #include <storage.h>
-#include <temperature.h>
 #include <steering_wheel.h>
 #include <Wire.h>
 
@@ -49,9 +49,12 @@ void setup()
     gpio::init();
     indicatorLed::init();
     spoilerLed::init();
+    temperature::init();
+
+    // Search for all onewire sensors
+    //temperature::search();
 
     //storage::init();
-    //temperature::init();
     //steeringWheel::init();
 
     Serial.println("Module setup finished");
@@ -289,14 +292,11 @@ void loop()
         SerialBT.write((uint8_t)(brakePressure & 0xFF));
 
         // Temperatures (8)
-        SerialBT.write(0xFF);
-        SerialBT.write(0xFF);
-        SerialBT.write(0xFF);
-        SerialBT.write(0xFF);
-        SerialBT.write(0xFF);
-        SerialBT.write(0xFF);
-        SerialBT.write(0xFF);
-        SerialBT.write(0xFF);
+        float temp0 = temperature::readTemperature(0);
+        float temp1 = temperature::readTemperature(1);
+
+        SerialBT.write((uint8_t*)&temp0, 4);
+        SerialBT.write((uint8_t*)&temp1, 4);
 
         // Flash memory test (1)
         SerialBT.write(0xFF);
