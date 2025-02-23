@@ -15,7 +15,6 @@
 
 #include <storage.h>
 #include <steering_wheel.h>
-#include <Wire.h>
 
 #define BLUETOOTH_CONTROL
 
@@ -335,7 +334,6 @@ void loop()
         // GPI (3)
         SerialBT.write((uint8_t)gpio::read(0));
         SerialBT.write((uint8_t)gpio::read(1));
-        SerialBT.write((uint8_t)gpio::read(2));
 
         Serial.println("Data sent");
         lastBTSendTimestamp = millis();

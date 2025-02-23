@@ -10,9 +10,8 @@
 
 #define GPO_1 10
 #define GPO_2 11
-#define GPI_0 21
-#define GPI_1 22
-#define GPI_2 28
+#define GPI_0 22
+#define GPI_1 28
 
 namespace gpio
 {
@@ -28,7 +27,6 @@ namespace gpio
         pinMode(GPO_2, OUTPUT);
         pinMode(GPI_0, INPUT);
         pinMode(GPI_1, INPUT);
-        pinMode(GPI_2, INPUT);
 
         digitalWrite(GPO_1, LOW);
         digitalWrite(GPO_2, LOW);
@@ -55,7 +53,7 @@ namespace gpio
     }
 
     /// @brief Reads a GPI pin
-    /// @param gpi GPI pin number (0-2)
+    /// @param gpi GPI pin number (0-1)
     /// @return Bool, if an invalid pin is requested, returns false
     bool read(uint8_t gpi)
     {
@@ -63,7 +61,6 @@ namespace gpio
 
         if (gpi == 0) val = digitalRead(GPI_0);
         else if (gpi == 1) val = digitalRead(GPI_1);
-        else if (gpi == 2) val = digitalRead(GPI_2);
         else return false;
 
         return val;

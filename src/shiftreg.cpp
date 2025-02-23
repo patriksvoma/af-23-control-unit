@@ -10,6 +10,7 @@
 #define SIPO_DATA 7
 #define SIPO_CLOCK 13
 #define SIPO_LATCH 12
+#define SIPO_OE 21
 
 namespace shiftreg
 {
@@ -41,10 +42,15 @@ namespace shiftreg
         pinMode(SIPO_DATA, OUTPUT);
         pinMode(SIPO_CLOCK, OUTPUT);
         pinMode(SIPO_LATCH, OUTPUT);
+        pinMode(SIPO_OE, OUTPUT);
 
+        digitalWrite(SIPO_OE, HIGH);
         digitalWrite(SIPO_DATA, LOW);
         digitalWrite(SIPO_CLOCK, LOW);
         digitalWrite(SIPO_LATCH, LOW);
+
+        // Enable the output of the register
+        digitalWrite(SIPO_OE, LOW);
 
         write();
     }
