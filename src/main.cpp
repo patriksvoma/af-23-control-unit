@@ -23,7 +23,7 @@
 
 #define FAKE_BMS_REPORT
 ulong lastBTSendTimestamp;
-ulong btSendDelay = 100;
+ulong btSendDelay = 1000;
 #endif
 
 void setup()
@@ -285,7 +285,7 @@ void loop()
         uint16_t throttleValue = motor::getThrottle();
         SerialBT.write((uint8_t)(throttleValue >> 8));
         SerialBT.write((uint8_t)(throttleValue & 0xFF));
-
+        
         // Brake pressure (2)
         uint16_t brakePressure = brakeSensor::readPressureRaw();
         SerialBT.write((uint8_t)(brakePressure >> 8));

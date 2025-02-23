@@ -14,12 +14,14 @@ namespace bms
     struct BasicInfo
     {
         public:
-        uint16_t totalVoltage = 0;
+        uint16_t totalVoltage;
         uint16_t current;
         uint16_t remainingCapacity;
         uint16_t nominalCapacity;
         uint16_t cycles;
-        uint16_t productionDate;
+        uint8_t productionDateDay;
+        uint8_t productionDateMonth;
+        uint16_t productionDateYear;
         uint16_t equilibrium;
         uint16_t equilibriumHigh;
         uint16_t protectionStatus;
@@ -27,8 +29,8 @@ namespace bms
         uint8_t rsoc;
         uint8_t fetControl;
         uint8_t batteryStringCount;
-        uint8_t ntcCount;
-        uint64_t ntcContent;
+        uint8_t temperatureSensorCount;
+        uint8_t* temperatures;
 
         public:
 

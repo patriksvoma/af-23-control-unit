@@ -21,21 +21,23 @@ namespace bms
     struct BasicInfo
     {
         public:
-        uint16_t totalVoltage = 0; // Total voltage of the battery pack. Unit: 1 mV
+        uint16_t totalVoltage; // Total voltage of the battery pack. Unit: 1 mV
         uint16_t current; // Current current Unit: 1 mA
         uint16_t remainingCapacity; // Remaining capacity of the battery pack. Unit: 1 mAh
         uint16_t nominalCapacity; // Nominal capacity of the battery pack. Unit: 1 mAh
         uint16_t cycles; // Number of completed cycles (1 cycle is a complete charge and discharge)
-        uint16_t productionDate; // TODO
-        uint16_t equilibrium; // TODO
-        uint16_t equilibriumHigh; // TODO
+        uint8_t productionDateDay; // Day the BMS was produced
+        uint8_t productionDateMonth; // Month the BMS was produced
+        uint16_t productionDateYear; // Year the BMS was produced
+        uint16_t equilibrium; // Each bit represents if a battery string is being balanced
+        uint16_t equilibriumHigh; // Each bit represents if a battery string is being balanced
         uint16_t protectionStatus; // TODO
-        uint8_t softwareVersion; // TODO
+        uint8_t softwareVersion; // 0x10 -> v1.0
         uint8_t rsoc; // Percentage of remaining battery pack capacity
         uint8_t fetControl; // Status of the charge (bit 0) and discharge (bit 1) MOSFETs. 0 means off, 1 means on
         uint8_t batteryStringCount; // Number of batteries in the pack
-        uint8_t ntcCount; // TODO: Number of temperature sensors in the pack
-        uint64_t ntcContent; // Not sure how this works yet!
+        uint8_t temperatureSensorCount; // Number of temperature sensors in the battery pack
+        uint8_t* temperatures; // Array with temperatures from each sensor. Unit: 0.1 °C
 
         public:
 
@@ -60,7 +62,10 @@ namespace bms
             cycles = charToUInt16(dataContent, currentByte);
             currentByte += 2;
 
-            productionDate = charToUInt16(dataContent, currentByte);
+            uint16_t productionDate = charToUInt16(dataContent, currentByte);
+            productionDateDay = productionDate & 0x1F;
+            productionDateMonth = (productionDate >> 5) & 0x0F;
+            productionDateYear = 2000 + (productionDate >> 9);
             currentByte += 2;
 
             equilibrium = charToUInt16(dataContent, currentByte);
@@ -84,8 +89,17 @@ namespace bms
             batteryStringCount = (uint8_t)dataContent[currentByte];
             currentByte++;
 
-            ntcCount = (uint8_t)dataContent[currentByte];
+            temperatureSensorCount = (uint8_t)dataContent[currentByte];
             currentByte++;
+
+            delete[] temperatures;
+            temperatures = new uint8_t[temperatureSensorCount];
+            for (int i = 0; i < temperatureSensorCount; i++)
+            {
+                uint16_t tempKelvin = charToUInt16(dataContent, currentByte);
+                temperatures[i] = tempKelvin - 2731;
+                currentByte += 2;
+            }
         }
 
         void printOut()
@@ -95,7 +109,7 @@ namespace bms
             Serial.println("Remaining capacity: " + String(remainingCapacity) + " mAh");
             Serial.println("Nominal capacity: " + String(nominalCapacity) + " mAh");
             Serial.println("Completed cycles: " + String(cycles));
-            Serial.println("Production date: " + String(productionDate, HEX));
+            Serial.println("Production date: " + String(productionDateYear) + "/" + String(productionDateMonth) + "/" + String(productionDateDay));
             Serial.println("Equilibrium 0: " + String(equilibrium, BIN));
             Serial.println("Equilibrium 1: " + String(equilibriumHigh, BIN));
             Serial.println("Protection status: " + String(protectionStatus, BIN));
@@ -103,8 +117,12 @@ namespace bms
             Serial.println("Relative state of charge: " + String(rsoc) + " %");
             Serial.println("MOSFET status: " + String(fetControl, BIN));
             Serial.println("Battery count: " + String(batteryStringCount));
-            Serial.println("Temperature sensor count: " + String(ntcCount));
-            // TODO: ntc content
+            Serial.println("Temperature sensor count: " + String(temperatureSensorCount));
+            
+            for (int i = 0; i < temperatureSensorCount; i++)
+            {
+                Serial.println("Temperature " + String(i) + ": " + String(temperatures[i]) + " * 0.1°C");
+            }
         }
     };
 
@@ -115,6 +133,8 @@ namespace bms
     {
         Serial1.setTX(UART0_TX);
         Serial1.setRX(UART0_RX);
+        Serial1.setInvertTX(true);
+        Serial1.setInvertRX(true);
         Serial1.setTimeout(50);
         Serial1.begin(9600, SERIAL_8N1);
     }
@@ -148,66 +168,60 @@ namespace bms
         // Remove the data content from the heap, since it will not be used anymore
         delete[] dataContent;
 
-        while (Serial1.available() == 0) {};
+        //
+        //  Receiving
+        //
 
-        // Read the response
-        if (Serial1.available() > 0)
+        // Create a buffer for the received data. 34 bytes of data are expected for the whole message
+        const uint16_t expectedDataLength = 34; // TODO: Change for the real data
+        char* receivedData = new char[expectedDataLength];
+
+        // Read all bytes into an array, prevent the serial buffer from overflowing when receiving more than 32 bytes
+        // TODO: A timeout should be here
+        for (int i = 0; i < expectedDataLength; i++)
         {
-            // Create variables where parts of the received data will be stored
-            uint8_t recStartByte;
-            uint8_t recStateByte;
-            uint8_t recStatusByte;
-            uint8_t recDataLength;
-            char* recDataContent;
-            uint16_t recChecksum;
-            uint8_t recStopByte;
-
-            // Read the data
-            recStartByte = Serial1.read();
-            recStateByte = Serial1.read();
-            recStatusByte = Serial1.read();
-            recDataLength = Serial1.read();
-            recDataContent = new char[recDataLength];
-            Serial1.readBytes(recDataContent, recDataLength);
-
-            // The checksum needs to be read as an array and then converted to a uint16_t
-            char* tempChecksum = new char[2];
-            Serial1.readBytes(tempChecksum, 2);
-            recChecksum = charToUInt16(tempChecksum, 0);
-            delete[] tempChecksum;
-
-            recStopByte = Serial1.read();
-
-            // Check if the checksum matches
-            if (calculateChecksum(recStatusByte, recDataLength, recDataContent) == recChecksum)
-            {
-                Serial.println("Checksum matches");
-            }
-            else
-            {
-                Serial.println("Checksum does not match");
-                
-            }
-
-            // Print out the data
-            // TODO: Remove
-            Serial.println(recStartByte, HEX);
-            Serial.println(recStateByte, HEX);
-            Serial.println(recStatusByte, HEX);
-            Serial.println(recDataLength, HEX);
-            for (int i = 0; i < recDataLength; i++) Serial.print(recDataContent[i], HEX);
-            Serial.println("");
-            Serial.println(recChecksum, HEX);
-            Serial.println(recStopByte, HEX);
-
-            Serial.println("BMS data received");
-            
-            // Read the values from the data content
-            basicInfo.process(recDataContent);
-            basicInfo.printOut();
-
-            delete[] recDataContent;
+            while (Serial1.available() == 0) {};
+            receivedData[i] = Serial1.read();
         }
+
+        // Check if the start and stop bits are correct
+        if (receivedData[0] != 0xDD || receivedData[expectedDataLength - 1] != 0x77)
+        {
+            Serial.println("Start or stop bit is not correct, BMS data invalid.");
+            return;
+        }
+
+        // Separate the data into variables
+        uint8_t recStartByte = receivedData[0];
+        uint8_t recStateByte = receivedData[1];
+        uint8_t recStatusByte = receivedData[2];
+        uint8_t recDataLength = receivedData[3];
+        char* recDataContent = new char[recDataLength];
+        uint16_t recChecksum;
+        uint8_t recStopByte = receivedData[33];
+
+        memcpy(&recDataContent[0], &receivedData[4], expectedDataLength - 7);
+        recChecksum = charToUInt16(receivedData, 31);
+
+        delete[] receivedData;
+
+        // Check if the checksum matches
+        if (calculateChecksum(recStatusByte, recDataLength, recDataContent) == recChecksum)
+        {
+            Serial.println("Checksum matches");
+        }
+        else
+        {
+            Serial.println("Checksum does not match");
+            return;
+        }
+
+        Serial.println("Processing data");
+        basicInfo.process(recDataContent);
+        delete[] recDataContent;
+
+        basicInfo.printOut();
+        Serial.println("Data processed\n\n\n");
     }
 
     /// @brief Calculates the checksum of a command
