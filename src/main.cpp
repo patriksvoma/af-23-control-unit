@@ -12,9 +12,9 @@
 #include <indicator_led.h>
 #include <spoiler_led.h>
 #include <temperature.h>
+#include <steering_wheel.h>
 
 #include <storage.h>
-#include <steering_wheel.h>
 
 #define BLUETOOTH_CONTROL
 
@@ -22,7 +22,7 @@
 
 #define FAKE_BMS_REPORT
 ulong lastBTSendTimestamp;
-ulong btSendDelay = 1000;
+ulong btSendDelay = 250;
 #endif
 
 void setup()
@@ -49,12 +49,12 @@ void setup()
     indicatorLed::init();
     spoilerLed::init();
     temperature::init();
+    steeringWheel::init();
 
     // Search for all onewire sensors
     //temperature::search();
 
     //storage::init();
-    //steeringWheel::init();
 
     Serial.println("Module setup finished");
 }
@@ -301,7 +301,8 @@ void loop()
         SerialBT.write(0xFF);
 
         // Steering wheel connected (1)
-        SerialBT.write(0xFF);
+        SerialBT.write(steeringWheel::testConnectionPin());
+        SerialBT.write(steeringWheel::testConnectionSerial());
 
         // RTC data (7)
         rtc::refresh();

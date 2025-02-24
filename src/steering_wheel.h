@@ -5,5 +5,6 @@
 namespace steeringWheel
 {
     void init();
-    bool testConnection();
+    bool testConnectionPin();
+    bool testConnectionSerial();
 }
