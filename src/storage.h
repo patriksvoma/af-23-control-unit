@@ -8,4 +8,5 @@
 namespace storage
 {
     void init();
+    uint8_t testRead();
 }

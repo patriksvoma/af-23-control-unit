@@ -13,7 +13,6 @@
 #include <spoiler_led.h>
 #include <temperature.h>
 #include <steering_wheel.h>
-
 #include <storage.h>
 
 #define BLUETOOTH_CONTROL
@@ -50,11 +49,11 @@ void setup()
     spoilerLed::init();
     temperature::init();
     steeringWheel::init();
+    storage::init();
 
     // Search for all onewire sensors
     //temperature::search();
 
-    //storage::init();
 
     Serial.println("Module setup finished");
 }
@@ -336,11 +335,14 @@ void loop()
         SerialBT.write((uint8_t)gpio::read(0));
         SerialBT.write((uint8_t)gpio::read(1));
 
+        // Flash memory
+        SerialBT.write(storage::testRead());
+
         Serial.println("Data sent");
         lastBTSendTimestamp = millis();
     }
 
 #endif
 
-    delay(10);
+    delay(50);
 }

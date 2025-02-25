@@ -21,7 +21,11 @@
 
 namespace storage
 {
+    // TODO: Remove
+    bool testReadSuccessful = false;
+
     void init();
+    uint8_t testRead();
     int eraseChip();
     int lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t offset, void *buffer, lfs_size_t size);
     int lfs_write(const struct lfs_config *c, lfs_block_t block, lfs_off_t offset, const void *buffer, lfs_size_t size);
@@ -64,7 +68,7 @@ namespace storage
         
         if (!flash.begin(my_flash_devices, flashDevices)) {
             Serial.println("Failed to initialize external SPI flash!");
-            while (1);
+            return;
         }
         Serial.println("Flash memory initialized.");
 
@@ -118,8 +122,32 @@ namespace storage
         Serial.print("File closed, read: ");
         Serial.println(readBuf);
 
+        if (readBuf[0] == 'T')
+        {
+            Serial.println("File read first letter matches.");
+            testReadSuccessful = true;
+        }
+
         // Unmount LittleFS
         lfs_unmount(&lfs);
+    }
+
+    // Test reads a single character
+    uint8_t testRead()
+    {
+        return testReadSuccessful;
+
+        lfs_file_t file;
+        char readBuf[1];
+
+        Serial.println("Testing file read");
+        lfs_file_open(&lfs, &file, "/test.txt", LFS_O_RDWR | LFS_O_CREAT);
+
+        lfs_file_read(&lfs, &file, &readBuf, sizeof(readBuf));
+
+        lfs_file_close(&lfs, &file);
+
+        return readBuf[0];
     }
     
     /// @brief Erases the whole chip
