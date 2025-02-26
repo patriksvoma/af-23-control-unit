@@ -11,4 +11,5 @@ namespace motor
     void setMotorBrake(uint8_t value);
     bool getHallSignal();
     uint16_t getThrottle();
+    uint32_t getRPM();
 }

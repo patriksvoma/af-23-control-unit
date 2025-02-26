@@ -277,8 +277,11 @@ void loop()
 
         SerialBT.write((uint8_t*)&gyroTemp.temperature, 4);
 
-        // Motor data (3)
+        // Motor data (5)
         SerialBT.write((uint8_t)motor::getHallSignal());
+
+        uint32_t rpm = motor::getRPM();
+        SerialBT.write((uint8_t*)&rpm, 2);
 
         uint16_t throttleValue = motor::getThrottle();
         SerialBT.write((uint8_t)(throttleValue >> 8));
@@ -297,7 +300,7 @@ void loop()
         SerialBT.write((uint8_t*)&temp1, 4);
 
         // Flash memory test (1)
-        SerialBT.write(0xFF);
+        SerialBT.write(storage::testRead());
 
         // Steering wheel connected (1)
         SerialBT.write(steeringWheel::testConnectionPin());
@@ -334,9 +337,6 @@ void loop()
         // GPI (3)
         SerialBT.write((uint8_t)gpio::read(0));
         SerialBT.write((uint8_t)gpio::read(1));
-
-        // Flash memory
-        SerialBT.write(storage::testRead());
 
         Serial.println("Data sent");
         lastBTSendTimestamp = millis();
