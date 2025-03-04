@@ -22,7 +22,7 @@ namespace bms
     {
         public:
         uint16_t totalVoltage; // Total voltage of the battery pack. Unit: 1 mV
-        uint16_t current; // Current current Unit: 1 mA
+        uint16_t current; // Current current. Unit: 10 mA
         uint16_t remainingCapacity; // Remaining capacity of the battery pack. Unit: 1 mAh
         uint16_t nominalCapacity; // Nominal capacity of the battery pack. Unit: 1 mAh
         uint16_t cycles; // Number of completed cycles (1 cycle is a complete charge and discharge)
@@ -50,7 +50,7 @@ namespace bms
             totalVoltage = charToUInt16(dataContent, currentByte) * 10;
             currentByte += 2;
 
-            current = charToUInt16(dataContent, currentByte) * 10;
+            current = charToUInt16(dataContent, currentByte);
             currentByte += 2;
 
             remainingCapacity = charToUInt16(dataContent, currentByte) * 10;
@@ -173,14 +173,23 @@ namespace bms
         //
 
         // Create a buffer for the received data. 34 bytes of data are expected for the whole message
-        const uint16_t expectedDataLength = 34; // TODO: Change for the real data
+        const uint16_t expectedDataLength = 45;
         char* receivedData = new char[expectedDataLength];
 
         // Read all bytes into an array, prevent the serial buffer from overflowing when receiving more than 32 bytes
         // TODO: A timeout should be here
+        uint32_t receiveStartTime = millis();
+
         for (int i = 0; i < expectedDataLength; i++)
         {
-            while (Serial1.available() == 0) {};
+            while (Serial1.available() == 0)
+            {
+                if (millis() > receiveStartTime + 500)
+                {
+                    Serial.println("Serial data receive timed out.");
+                    return;
+                }
+            };
             receivedData[i] = Serial1.read();
         }
 
@@ -198,10 +207,10 @@ namespace bms
         uint8_t recDataLength = receivedData[3];
         char* recDataContent = new char[recDataLength];
         uint16_t recChecksum;
-        uint8_t recStopByte = receivedData[33];
+        uint8_t recStopByte = receivedData[expectedDataLength - 1];
 
         memcpy(&recDataContent[0], &receivedData[4], expectedDataLength - 7);
-        recChecksum = charToUInt16(receivedData, 31);
+        recChecksum = charToUInt16(receivedData, expectedDataLength - 3);
 
         delete[] receivedData;
 
