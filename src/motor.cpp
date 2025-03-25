@@ -23,6 +23,8 @@ namespace motor
 
     const int HALL_PULSES_PER_ROTATION = 4;
 
+    u8_t motorBrake = 0;
+
     unsigned long hall_pulse_last_us;
     unsigned long hall_pulse_previous_us;
 
@@ -42,9 +44,17 @@ namespace motor
 
     /// @brief Sets the analog brake value
     /// @param value Value (0-255)
+
+
     void setMotorBrake(uint8_t value)
     {
+
         analogWrite(MOTOR_BRAKE, 255 - value);
+        motorBrake = value;
+    }
+
+    u8_t getMotorBrake(){
+        return motorBrake;
     }
 
     /// @brief Gets the current state of the hall sensor

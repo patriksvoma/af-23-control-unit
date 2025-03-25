@@ -12,4 +12,5 @@ namespace motor
     bool getHallSignal();
     uint16_t getThrottle();
     uint32_t getRPM();
+     u8_t getMotorBrake();
 }

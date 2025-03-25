@@ -21,8 +21,8 @@ namespace bms
     struct BasicInfo
     {
         public:
-        uint16_t totalVoltage; // Total voltage of the battery pack. Unit: 1 mV
-        uint16_t current; // Current current. Unit: 10 mA
+        uint16_t totalVoltage; // Total voltage of the battery pack. Unit: 10 mV
+        int16_t current; // Current current. Unit: 10 mA
         uint16_t remainingCapacity; // Remaining capacity of the battery pack. Unit: 1 mAh
         uint16_t nominalCapacity; // Nominal capacity of the battery pack. Unit: 1 mAh
         uint16_t cycles; // Number of completed cycles (1 cycle is a complete charge and discharge)
@@ -50,7 +50,7 @@ namespace bms
             totalVoltage = charToUInt16(dataContent, currentByte) * 10;
             currentByte += 2;
 
-            current = charToUInt16(dataContent, currentByte);
+            current = (int16_t) charToUInt16(dataContent, currentByte);
             currentByte += 2;
 
             remainingCapacity = charToUInt16(dataContent, currentByte) * 10;

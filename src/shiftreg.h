@@ -14,4 +14,6 @@ namespace shiftreg
     void set_motor_hi_speed(bool newValue);
     void set_motor_fan(bool newValue);
     void set_gpo_0(bool newValue);
+     u8_t get_speed_mode();
+     u8_t get_ride_mode();
 }
