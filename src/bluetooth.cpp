@@ -6,25 +6,28 @@
     Protocol: https://cdn.shopifycdn.net/s/files/1/0606/5199/5298/files/JDB_RS485-RS232-UART-Bluetooth-Communication_Protocol.pdf?v=1682577935
 */
 
-#include <Arduino.h>
-#include <SerialBT.h>
-#include "bms.h"
+
+
+
+
 #include "bluetooth.h"
+      #include "bms.h"
+#include "ota.h"
+#include <SerialBT.h>
+
 
 #define DEBUG_ENABLED true
 
 #define START_BYTE 0xAA
 #define BATTERY_PACKET 0x03
+#define OTA_PACKET 0x04
 
-namespace bluetooth
-{
-     const size_t BUFFER_SIZE = 64;
-    uint8_t receiveBuffer[BUFFER_SIZE];
-    size_t bufferIndex = 0;
 
-        void sendPacket(uint8_t packetType, uint8_t* data, size_t dataLength);
+
+
+
     
-    void init(){
+    void Bluetooth::init(){
 
    Serial.println("Starting bluetooth");
 
@@ -35,7 +38,7 @@ namespace bluetooth
     Serial.println("Bluetooth started, waiting for connection. Starting modules.");
     }
 
-    void debugPrint(const char *message)
+    void Bluetooth::debugPrint(const char *message)
     {
         if (DEBUG_ENABLED)
         {
@@ -44,7 +47,7 @@ namespace bluetooth
         }
     }
 
-    void debugPrintln(const char *message)
+    void Bluetooth::debugPrintln(const char *message)
     {
         if (DEBUG_ENABLED)
         {
@@ -53,7 +56,7 @@ namespace bluetooth
         }
     }
 
-     void debugPrintf(const char* format, ...) {
+     void Bluetooth::debugPrintf(const char* format, ...) {
         if (DEBUG_ENABLED) {
             char buffer[128];
             va_list args;
@@ -69,7 +72,7 @@ namespace bluetooth
     /// @brief Helper function to print data in hex format
     /// @param data Pointer to data buffer
     /// @param length Length of data
-    void printHex(uint8_t *data, size_t length)
+    void Bluetooth::printHex(uint8_t *data, size_t length)
     {
         if (!DEBUG_ENABLED)
             return;
@@ -85,7 +88,7 @@ namespace bluetooth
         Serial.println();
     }
 
-      uint8_t calculateCRC(uint8_t* data, size_t length)
+      uint8_t Bluetooth::calculateCRC(uint8_t* data, size_t length)
     {
         uint8_t crc = 0;
         for (size_t i = 0; i < length; i++)
@@ -97,7 +100,7 @@ namespace bluetooth
     }
 
 
-      void handlePacket(uint8_t packetType, uint8_t* data, size_t dataLength)
+      void Bluetooth::handlePacket(uint8_t packetType, uint8_t* data, size_t dataLength)
     {
         switch (packetType)
         {
@@ -107,6 +110,9 @@ namespace bluetooth
             case BATTERY_PACKET:
                 debugPrintln("Received request for battery");
                 sendPacket(BATTERY_PACKET,&bms::basicInfo.rsoc,1);
+                break;
+            case OTA_PACKET:
+                ota::enter();
                 break;
             default:
                 debugPrintf("Unknown packet type: 0x%02X\n", packetType);
@@ -118,7 +124,7 @@ namespace bluetooth
     /// @param packetType Type of packet
     /// @param data Pointer to data buffer (can be NULL if dataLength is 0)
     /// @param dataLength Length of data
-    void sendPacket(uint8_t packetType, uint8_t* data, size_t dataLength)
+    void Bluetooth::sendPacket(uint8_t packetType, uint8_t* data, size_t dataLength)
     {
         debugPrintf("Sending packet type: 0x%02X, data length: %d\n", packetType, dataLength);
         
@@ -162,7 +168,7 @@ namespace bluetooth
     }
 
 
-    void readPacket()
+    void Bluetooth::readPacket()
     {
         if (SerialBT.availableForWrite())
         {
@@ -245,4 +251,4 @@ namespace bluetooth
             }
         }
     }
-}
+

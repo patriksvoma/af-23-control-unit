@@ -1,24 +1,23 @@
-/*
-    BMS communication module
 
-    Communicates with JBD-DP24S002 using UART
-
-    Protocol: https://cdn.shopifycdn.net/s/files/1/0606/5199/5298/files/JDB_RS485-RS232-UART-Bluetooth-Communication_Protocol.pdf?v=1682577935
-*/
+#include "bluetooth.h"
 
 #include <Arduino.h>
 
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-
 #ifndef STASSID
-#define STASSID "your-ssid"
-#define STAPSK "your-password"
+#define STASSID "AF23_Update"
+#define STAPSK "12345678"
 #endif
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
+#define OTA_PACKET 0x04
+
+
+extern Bluetooth bluetooth;
+ 
 namespace ota
 {
    void enter(){
@@ -38,8 +37,11 @@ namespace ota
  
   Serial.print("AP IP Address: ");
   Serial.println(apIP);
+    uint8_t ip[4] {apIP[0],apIP[1],apIP[2],apIP[3]};
+    bluetooth.sendPacket(OTA_PACKET,ip,4);
 
-  // Port defaults to 2040
+
+  // Port defaults to 2241
   ArduinoOTA.setPort(2241);
 
   // Hostname defaults to pico-[ChipID]
@@ -91,12 +93,14 @@ namespace ota
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-    while (true)
+  u32_t otaStart = millis();
+    while (millis()-otaStart<12000)
     {
         ArduinoOTA.handle();
     }
 
-    //Call back na ukončení
+    //Send callback on succes
+    //Send failed
     
    }
 }

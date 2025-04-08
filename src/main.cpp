@@ -24,6 +24,8 @@ ulong lastBTSendTimestamp;
 ulong btSendDelay = 250;
 #endif
 
+Bluetooth bluetooth;
+
 void setup()
 {
     Serial.begin(9600);
@@ -31,7 +33,7 @@ void setup()
    
 
     // Initialize modules
-    bluetooth::init();
+    bluetooth.init();
     shiftreg::init();
     motor::init();
     gpio::init();
@@ -54,7 +56,7 @@ void setup()
 
 void loop()
 {
-bluetooth::readPacket();
+bluetooth.readPacket();
 
 
 
