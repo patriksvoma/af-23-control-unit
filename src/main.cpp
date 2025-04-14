@@ -15,6 +15,8 @@
 #include <steering_wheel.h>
 #include <storage.h>
 #include <bluetooth.h>
+#include <rideStats.h>
+
 // #define BLUETOOTH_CONTROL
 
 #ifdef BLUETOOTH_CONTROL
@@ -25,6 +27,7 @@ ulong btSendDelay = 250;
 #endif
 
 Bluetooth bluetooth;
+RideStats rideStats;
 
 void setup()
 {
@@ -33,7 +36,6 @@ void setup()
    
 
     // Initialize modules
-    bluetooth.init();
     shiftreg::init();
     motor::init();
     gpio::init();
@@ -45,21 +47,36 @@ void setup()
     indicatorLed::init();
     spoilerLed::init();
     temperature::init();
-    steeringWheel::init();
+    steeringWheel::init();    
     storage::init();
+
+    rideStats.init();
+    bluetooth.init();
+
+
 
     // Search for all onewire sensors
     // temperature::search();
 
     Serial.println("Module setup finished");
+shiftreg::set_motor_pwr(true);
+spoilerLed::setAnimation(0);
+
+
 }
 
 void loop()
 {
 bluetooth.readPacket();
+rideStats.update();
 
 
 
+
+
+
+
+    //TODO MAYBE RIDE HISTORY
     // GET THE DATA
     // WRITE THEM INTO RIDE DATA INTO MEMORY EVERY 1s or so
     // READ DATA REQUEST and send the response
@@ -122,10 +139,7 @@ bluetooth.readPacket();
          SerialBT.write((uint8_t*)&gyroTemp.temperature, 4);
          */
 
-  
-
    // Serial.println("Data sent");
-
 
 // Allow rebooting via USB serial
 if (Serial.available() > 0)

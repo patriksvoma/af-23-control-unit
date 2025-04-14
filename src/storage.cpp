@@ -23,6 +23,8 @@ namespace storage
 {
     // TODO: Remove
     bool testReadSuccessful = false;
+    const char* TOTAL_DISTANCE_FILE = "/total_distance.dat";
+
 
     void init();
     uint8_t testRead();
@@ -204,6 +206,7 @@ namespace storage
         return 0;
     }
 
+
     /// @brief LittleFS uses this function to erase blocks of flash memory
     /// @param c LittleFS config
     /// @param block Index of the memory block
@@ -221,5 +224,81 @@ namespace storage
     int lfs_sync(const struct lfs_config *c)
     {
         return 0;
+    }
+
+    void loadTotalDistance(float *distance_driven_total_m) {
+        lfs_file_t file;
+        
+        // Debug print
+        Serial.println("Loading total distance...");
+        
+        // Mount LittleFS
+        if (lfs_mount(&storage::lfs, &storage::lfs_cfg) != 0) {
+            Serial.println("Failed to mount LittleFS for reading total distance");
+            *distance_driven_total_m = 0; // Set to 0 if we can't read
+            return;
+        }
+        
+        // Try to open the file
+        int open_result = lfs_file_open(&storage::lfs, &file, TOTAL_DISTANCE_FILE, LFS_O_RDONLY);
+        if (open_result == 0) {
+            // Read the distance value
+            int read_result = lfs_file_read(&storage::lfs, &file, distance_driven_total_m, sizeof(float));
+            if (read_result != sizeof(float)) {
+                Serial.printf("Error reading total distance file. Read %d bytes, expected %d bytes\n", 
+                              read_result, (int)sizeof(float));
+                *distance_driven_total_m = 0;
+            } else {
+                Serial.printf("Loaded total distance: %.2f meters\n", *distance_driven_total_m);
+            }
+            lfs_file_close(&storage::lfs, &file);
+        } else {
+            // File doesn't exist yet, initialize to 0
+            Serial.printf("File doesn't exist (error code: %d). Initializing to 0\n", open_result);
+            *distance_driven_total_m = 0;
+        }
+        
+        // Unmount LittleFS
+        lfs_unmount(&storage::lfs);
+        
+        // Additional sanity check for loaded value
+        if (*distance_driven_total_m < 0 || *distance_driven_total_m > 1000000) {
+            Serial.printf("Warning: Loaded distance value looks invalid: %.2f. Resetting to 0\n", 
+                         *distance_driven_total_m);
+            *distance_driven_total_m = 0;
+        }
+    }
+    
+    void saveTotalDistance(float distance_driven_total_m) {
+        lfs_file_t file;
+        
+        // Debug print
+        Serial.printf("Saving total distance: %.2f meters\n", distance_driven_total_m);
+        
+        // Mount LittleFS
+        if (lfs_mount(&storage::lfs, &storage::lfs_cfg) != 0) {
+            Serial.println("Failed to mount LittleFS for saving total distance");
+            return;
+        }
+        
+        // Open or create the file
+        int open_result = lfs_file_open(&storage::lfs, &file, TOTAL_DISTANCE_FILE, 
+                                        LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
+        if (open_result == 0) {
+            // Write the distance value
+            int write_result = lfs_file_write(&storage::lfs, &file, &distance_driven_total_m, sizeof(float));
+            if (write_result != sizeof(float)) {
+                Serial.printf("Error writing total distance file. Wrote %d bytes, expected %d bytes\n", 
+                             write_result, (int)sizeof(float));
+            } else {
+                Serial.println("Total distance saved successfully");
+            }
+            lfs_file_close(&storage::lfs, &file);
+        } else {
+            Serial.printf("Failed to open total distance file for writing (error code: %d)\n", open_result);
+        }
+        
+        // Unmount LittleFS - this was missing in your original code!
+        lfs_unmount(&storage::lfs);
     }
 }

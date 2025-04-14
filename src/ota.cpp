@@ -94,7 +94,7 @@ namespace ota
   Serial.println(WiFi.localIP());
 
   u32_t otaStart = millis();
-    while (millis()-otaStart<12000)
+    while (millis()-otaStart<120000)
     {
         ArduinoOTA.handle();
     }

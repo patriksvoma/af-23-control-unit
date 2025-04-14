@@ -10,6 +10,8 @@ namespace bms
 {
     void init();
     void sendReceiveBasicInfo();
+    void sendReceiveCellVoltage();
+    void populateBatteryData(uint8_t* batteryData);
     
     struct BasicInfo
     {
@@ -30,13 +32,23 @@ namespace bms
         uint8_t fetControl;
         uint8_t batteryStringCount;
         uint8_t temperatureSensorCount;
-        uint8_t* temperatures;
+        uint16_t* temperatures;
 
         public:
 
         void process(char* dataContent);
         void printOut();
     };
+    struct CellVoltages{
+        public:
+        uint8_t cellCount;       
+        uint16_t* voltages;
+
+        public:
+        void process(char* dataContent, uint8_t dataLength);
+        void printOut();
+    };
     
     extern BasicInfo basicInfo;
+    extern CellVoltages cellVoltages;
 }

@@ -88,15 +88,15 @@ namespace shiftreg
         Serial.println("---");
 
         Serial.println(motor_reverse);
-        Serial.println(motor_pwr);
+        Serial.println(motor_foot_sw);
 
 
-        if (motor_reverse  && motor_pwr)
+        if (motor_reverse  && motor_foot_sw)
         {
             rideMode = 2;
         }
 
-        if (motor_reverse == false && motor_pwr==true)
+        if (motor_reverse == false && motor_foot_sw==true)
         {
             rideMode = 0;
         }
