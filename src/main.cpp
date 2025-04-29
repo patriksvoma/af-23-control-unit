@@ -49,7 +49,7 @@ void setup()
     temperature::init();
     steeringWheel::init();    
     storage::init();
-
+    Serial.println("Default modules inits");
     rideStats.init();
     bluetooth.init();
 
@@ -69,6 +69,7 @@ void loop()
 {
 bluetooth.readPacket();
 rideStats.update();
+spoilerLed::updateAnimation();
 
 
 

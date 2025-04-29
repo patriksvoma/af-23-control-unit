@@ -80,7 +80,6 @@ void RideStats::update() {
             threshold_reached[i] = false;
         }
         
-        Serial.println("Starting new acceleration timing run");
     }
     
     // Check for threshold crossings if we're in an active run

@@ -8,6 +8,7 @@
 #include <bms.h>
 #include <shiftreg.h>
 #include <rideStats.h>
+#include "spoiler_led.h"
 
 #define UART1_TX 8
 #define UART1_RX 9
@@ -24,8 +25,9 @@
 #define BREAK_PACKET_TYPE 0x07
 #define TEMP_PACKET_TYPE 0x08
 #define RIDE_STATS_PACKET_TYPE 0x09
+#define LED_SPOILER_PACKET_TYPE 0x10
 
-// Debug control - set to false to disable debug messages
+// Debug control 
 #define DEBUG_ENABLED true
 
 extern RideStats rideStats;
@@ -362,6 +364,21 @@ namespace steeringWheel
         sendRideStatsData();
         break;
 
+        case LED_SPOILER_PACKET_TYPE:
+            debugPrintln("Received command for spoiler animation");
+            if(data[0]==10){
+                //...
+                spoilerLed::setAnimation(8);
+            }
+            else if(data[0]==20){
+                spoilerLed::setAnimation(9);
+
+            }
+            else if(data[0]==30){
+                spoilerLed::setAnimation(10);
+
+            }
+            break;
             
         default:
             debugPrintf("Unknown packet type: 0x%02X\n", packetType);

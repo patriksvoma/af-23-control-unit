@@ -58,11 +58,10 @@ namespace storage
         .lookahead_size = 16,
     };
 
-    /// @brief Initializes the storage module
     void init()
     {
         Serial.println("Initializing SPI Flash memory.");
-
+    
         // Set the correct SPI pins
         SPI.setRX(SPI0_MISO);
         SPI.setSCK(SPI0_SCK);
@@ -73,67 +72,48 @@ namespace storage
             return;
         }
         Serial.println("Flash memory initialized.");
-
+    
         // Print out the JEBED id of the connected flash
         Serial.print("Flash JEBEC ID: 0x");
         Serial.print(flash.getJEDECID(), HEX);
         Serial.println(", expected value: 0xEF4016.");
-
+    
         // Mount LittleFS
         Serial.println("Initializing LittleFS.");
         Serial.println("Mounting");
-        if (lfs_mount(&lfs, &lfs_cfg) != 0)
+        int mountResult = lfs_mount(&lfs, &lfs_cfg);
+        if (mountResult != 0)
         {
             // If mounting fails, format and try to mount again
             Serial.println("Mounting LittleFS failed, formatting and mounting again.");
-            Serial.println(lfs_format(&lfs, &lfs_cfg));
-            flash.waitUntilReady();
-            if (lfs_mount(&lfs, &lfs_cfg)!= 0)
-            {
-                Serial.println("Mounting LittleFS failed again. Stopping execution!");
+            int formatResult = lfs_format(&lfs, &lfs_cfg);
+            Serial.print("Format result: ");
+            Serial.println(formatResult);
+            if (formatResult != 0) {
+                Serial.println("Formatting failed. Stopping execution!");
                 while (true);
+            }
+            flash.waitUntilReady();
+            mountResult = lfs_mount(&lfs, &lfs_cfg);
+            if (mountResult != 0)
+            {
+                Serial.print("Mounting LittleFS failed again with error: ");
+                Serial.println(mountResult);
+                Serial.println("Stopping execution!");
             }
         }
         Serial.println("LittleFS mounted successfully.");
-
-        //lfs_remove(&lfs, "/test.txt");
-
-        // Write to a file
-        Serial.println("Testing file write.");
-        const char* writeBuf = "CAU CAU CAU ALDYGAMES";
-
-        lfs_file_t file;
-        lfs_file_open(&lfs, &file, "/test2.txt", LFS_O_RDWR | LFS_O_CREAT);
-
-        //lfs_file_write(&lfs, &file, writeBuf, strlen(writeBuf));
-
-        lfs_file_close(&lfs, &file);
-        Serial.println("File closed.");
-
-        // Test file read
-        // test.txt, test1.txt, test2.txt should be readable
-        char readBuf[22];
-
-        Serial.println("Testing file read.");
-        lfs_file_open(&lfs, &file, "/test.txt", LFS_O_RDWR | LFS_O_CREAT);
-
-        lfs_file_read(&lfs, &file, &readBuf, sizeof(readBuf));
-
-        lfs_file_close(&lfs, &file);
-
-        Serial.print("File closed, read: ");
-        Serial.println(readBuf);
-
-        if (readBuf[0] == 'T')
-        {
-            Serial.println("File read first letter matches.");
-            testReadSuccessful = true;
-        }
-
+    
+         
+    
+       
+       
+    
+       
+    
         // Unmount LittleFS
         lfs_unmount(&lfs);
     }
-
     // Test reads a single character
     uint8_t testRead()
     {

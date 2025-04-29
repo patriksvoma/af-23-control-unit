@@ -62,7 +62,7 @@ namespace shiftreg
     {
         motor_pwr = newValue;
         write();
-         if (motor_pwr==false)
+         if (newValue==false)
         {
             rideMode = 1;
         }
@@ -99,6 +99,9 @@ namespace shiftreg
         if (motor_reverse == false && motor_foot_sw==true)
         {
             rideMode = 0;
+        }
+        if(motor_brake_sw == false){
+            rideMode=1;
         }
 
         Serial.println(rideMode);
