@@ -1,9 +1,5 @@
 /*
-    BMS communication module
-
-    Communicates with JBD-DP24S002 using UART
-
-    Protocol: https://cdn.shopifycdn.net/s/files/1/0606/5199/5298/files/JDB_RS485-RS232-UART-Bluetooth-Communication_Protocol.pdf?v=1682577935
+    Companion app communication module
 */
 
 #include "bluetooth.h"
@@ -15,6 +11,7 @@
 #define DEBUG_ENABLED true
 
 #define START_BYTE 0xAA
+#define ACK_PACKET 0x02
 #define BATTERY_PACKET 0x03
 #define OTA_PACKET 0x04
 #define LED_PACKET 0x05
@@ -28,7 +25,7 @@ void Bluetooth::init()
     SerialBT.setTimeout(10);
     SerialBT.begin();
 
-    Serial.println("Bluetooth started, waiting for connection. Starting modules.");
+    Serial.println("Bluetooth started, waiting for connection.");
 }
 
 void Bluetooth::debugPrint(const char *message)
@@ -98,7 +95,7 @@ void Bluetooth::handlePacket(uint8_t packetType, uint8_t *data, size_t dataLengt
 {
     switch (packetType)
     {
-    case 0x02:
+    case ACK_PACKET:
         debugPrintln("Received ACK packet");
         break;
     case BATTERY_PACKET:
@@ -109,10 +106,10 @@ void Bluetooth::handlePacket(uint8_t packetType, uint8_t *data, size_t dataLengt
         ota::enter();
         break;
     case LED_PACKET:
-        debugPrintf("Received command for spoiler value: %d",data[0]);
+        debugPrintf("Received command for spoiler value: %d", data[0]);
 
         spoilerLed::setAnimation(data[0]);
-        sendPacket(LED_PACKET,nullptr,0);
+        sendPacket(LED_PACKET, nullptr, 0);
 
         break;
 
