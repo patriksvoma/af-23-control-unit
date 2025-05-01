@@ -44,6 +44,7 @@ void setup()
     bluetooth.init();
 
     Serial.println("Module setup finished");
+    
     shiftreg::set_motor_pwr(true);
     spoilerLed::setAnimation(0);
 }

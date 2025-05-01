@@ -2,6 +2,8 @@
     BMS communication module
 
     Communicates with JBD-DP24S002 using UART
+
+    Protocol: https://cdn.shopifycdn.net/s/files/1/0606/5199/5298/files/JDB_RS485-RS232-UART-Bluetooth-Communication_Protocol.pdf?v=1682577935
 */
 
 #include <Arduino.h>
