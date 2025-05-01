@@ -90,26 +90,24 @@ namespace shiftreg
         Serial.println(motor_reverse);
         Serial.println(motor_foot_sw);
 
-
-        if (motor_reverse  && motor_foot_sw)
+        // Neutral
+        if(motor_foot_sw == false){
+            rideMode = 1;
+        }
+        // Forward
+        if (motor_reverse == false && motor_foot_sw == true)
+        {
+            rideMode = 0;
+        }
+        // Reverse
+        if (motor_reverse == true && motor_foot_sw == true)
         {
             rideMode = 2;
         }
 
-        if (motor_reverse == false && motor_foot_sw==true)
-        {
-            rideMode = 0;
-        }
-        if(motor_brake_sw == false){
-            rideMode=1;
-        }
-
         Serial.println(rideMode);
-
-        
      
         write();
-
     }
 
     void set_motor_lo_speed(bool newValue)
