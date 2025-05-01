@@ -2,6 +2,8 @@
     DS18B20 temperature sensor module
 */
 
+#include <temperature.h>
+
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
@@ -16,8 +18,11 @@ namespace temperature
     
     OneWire oneWire(ONE_WIRE_BUS);
     DallasTemperature sensors(&oneWire);
-    DeviceAddress sensor0 = {0x28, 0xDA, 0xCB, 0x1B, 0x10, 0x0, 0x0, 0xA1};
-    DeviceAddress sensor1 = {0x28, 0x5F, 0x96, 0x10, 0x10, 0x0, 0x0, 0x4D};
+    DeviceAddress sensor0 = {0x28, 0x88, 0x88, 0x45, 0xD4, 0x02, 0x65, 0x8D};   // MOTOR CONTROLLER
+    DeviceAddress sensor1 = {0x28, 0x02, 0x8B, 0x45, 0xD4, 0x15, 0x22, 0xA1};   // OUTSIDE
+    DeviceAddress sensor2 = {0x28, 0xA2, 0xF3, 0x45, 0xD4, 0xE0, 0x66, 0xEF};   // MOTOR
+    DeviceAddress sensor3 = {0x28, 0xDA, 0xCB, 0x1B, 0x10, 0x00, 0x00, 0xA1};   // CONTROL UNIT
+    DeviceAddress sensor4 = {0x28, 0x31, 0x6C, 0x45, 0xD4, 0xA3, 0x6D, 0x31};   // BRAKE
 
     /// @brief Initializes the temperature module
     void init()
@@ -66,11 +71,20 @@ namespace temperature
         
         switch (sensorId)
         {
-        case 0:
+        case TEMP_MOTOR_CONTROLLER:
             selectedDevice = &sensor0;
             break;
-        case 1:
+        case TEMP_OUTSIDE:
             selectedDevice = &sensor1;
+            break;
+        case TEMP_MOTOR:
+            selectedDevice = &sensor2;
+            break;
+        case TEMP_CONTROL_UNIT:
+            selectedDevice = &sensor3;
+            break;
+        case TEMP_BRAKE:
+            selectedDevice = &sensor4;
             break;
         default:
             return -127;

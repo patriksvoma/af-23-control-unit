@@ -577,7 +577,7 @@ namespace steeringWheel
         tempData[offset++] = (battery2 >> 8) & 0xFF;
         
         // Pack outside temperature (float - 4 bytes)
-        float outside = 20.4f;
+        float outside = temperature::readTemperature(TEMP_OUTSIDE);
         memcpy(&tempData[offset], &outside, sizeof(float));
         offset += sizeof(float);
         
@@ -587,22 +587,22 @@ namespace steeringWheel
         tempData[offset++] = (bms_temp >> 8) & 0xFF;
         
         // Pack brake temperature (float - 4 bytes)
-        float brake = 40.4f;
+        float brake = temperature::readTemperature(TEMP_BRAKE);
         memcpy(&tempData[offset], &brake, sizeof(float));
         offset += sizeof(float);
         
         // Pack motor controller temperature (float - 4 bytes)
-        float motorController = 60.4f;
+        float motorController = temperature::readTemperature(TEMP_MOTOR_CONTROLLER);
         memcpy(&tempData[offset], &motorController, sizeof(float));
         offset += sizeof(float);
         
         // Pack control unit temperature (float - 4 bytes)
-        float controlUnit = temperature::readTemperature(0);
+        float controlUnit = temperature::readTemperature(TEMP_CONTROL_UNIT);
         memcpy(&tempData[offset], &controlUnit, sizeof(float));
         offset += sizeof(float);
         
         // Pack motor temperature (float - 4 bytes)
-        float motor = 99.4f;
+        float motor = temperature::readTemperature(TEMP_MOTOR);
         memcpy(&tempData[offset], &motor, sizeof(float));
         offset += sizeof(float);
         
