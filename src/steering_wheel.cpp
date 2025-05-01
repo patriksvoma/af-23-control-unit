@@ -22,7 +22,7 @@
 #define HELLO_PACKET_TYPE 0x00
 #define SPEED_PACKET_TYPE 0x04
 #define MODE_PACKET_TYPE 0x05
-#define BREAK_PACKET_TYPE 0x07
+#define BRAKE_PACKET_TYPE 0x07
 #define TEMP_PACKET_TYPE 0x08
 #define RIDE_STATS_PACKET_TYPE 0x09
 #define LED_SPOILER_PACKET_TYPE 0x10
@@ -51,9 +51,6 @@ namespace steeringWheel
     void sendDashboardData();
     void sendRideStatsData();
     void sendTempData();
-    void setSpeedMode(uint8_t mode);
-    void setRideMode(uint8_t mode);
-    void changeMotorBreak(uint8_t breakValue);
 
     void printHex(uint8_t *data, size_t length);
 
@@ -345,15 +342,16 @@ namespace steeringWheel
             break;
         case SPEED_PACKET_TYPE:
             debugPrintln("Received command for speed");
-            setSpeedMode(data[0]);
+            motor::setRideSpeed(data[0]);
             break;
         case MODE_PACKET_TYPE:
             debugPrintln("Received command for ride mode");
-            setRideMode(data[0]);
+            motor::setRideMode(data[0]);
             break;
-        case BREAK_PACKET_TYPE:
-            debugPrintln("Received command for changing motor break");
-            changeMotorBreak(data[0]);
+        case BRAKE_PACKET_TYPE:
+            debugPrintln("Received command for changing motor brake");
+            if (data[0] == 1) motor::increaseMotorBrakeLevel();
+            else if (data[0] == 2) motor::decreaseMotorBrakeLevel();
             break;
         case TEMP_PACKET_TYPE:
         debugPrintln("Received request for temperature data");
@@ -383,24 +381,6 @@ namespace steeringWheel
         default:
             debugPrintf("Unknown packet type: 0x%02X\n", packetType);
             break;
-        }
-    }
-
-    void changeMotorBreak(uint8_t breakValue)
-    {
-        if (breakValue == 10) // plus
-        {
-            if (motor::getMotorBrake() <= 223)
-            {
-                motor::setMotorBrake(motor::getMotorBrake() + 32);
-            }
-        }
-        else if (breakValue == 20) // minus
-        {
-            if (motor::getMotorBrake() >= 32)
-            {
-                motor::setMotorBrake(motor::getMotorBrake() - 32);
-            }
         }
     }
 
@@ -458,8 +438,8 @@ namespace steeringWheel
         dashData[4] = bms::basicInfo.rsoc;
 
         // Status flags (1 byte)
-        dashData[5] = encodeDigits(shiftreg::get_speed_mode(), shiftreg::get_ride_mode());
-        dashData[6] = motor::getMotorBrake() / 32;
+        dashData[5] = encodeDigits(motor::getRideSpeed(), motor::getRideMode());
+        dashData[6] = motor::getMotorBrakeLevel();
 
         sendPacket(DASH_PACKET_TYPE, dashData, sizeof(dashData));
     }
@@ -608,48 +588,6 @@ namespace steeringWheel
         
         // Send the packet with all temperature data
         sendPacket(TEMP_PACKET_TYPE, tempData, sizeof(tempData));
-    }
-
-    void setSpeedMode(uint8_t mode)
-    {
-        debugPrintf("SpeedModeReceived:%d", mode);
-
-        if (mode == 0)
-        {
-            shiftreg::set_motor_hi_speed(false);
-            shiftreg::set_motor_lo_speed(true);
-        }
-        else if (mode == 1)
-        {
-            shiftreg::set_motor_lo_speed(false);
-            shiftreg::set_motor_hi_speed(false);
-        }
-        else if (mode == 2)
-        {
-            shiftreg::set_motor_lo_speed(false);
-            shiftreg::set_motor_hi_speed(true);
-        }
-    }
-
-    void setRideMode(uint8_t mode)
-    {
-        debugPrintf("SpeedModeReceived:%d", mode);
-
-        if (mode == 0)
-        {
-            shiftreg::set_motor_foot_sw(true);
-            shiftreg::set_motor_reverse(false);
-        }
-        else if (mode == 1)
-        {
-            shiftreg::set_motor_foot_sw(false);
-        }
-        else if (mode == 2)
-        {
-            shiftreg::set_motor_foot_sw(true);
-
-            shiftreg::set_motor_reverse(true);
-        }
     }
 
     /// @brief Process steering wheel communications

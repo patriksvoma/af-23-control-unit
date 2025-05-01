@@ -1,6 +1,8 @@
 /*
     Shift register module
-    Not to be used directly, should be used by the motor and ?? modules
+    Not to be used directly, should be used by high level modules
+
+    THIS MODULE SHALL BE INITIALIZED BEFORE ALL OTHERS!
 
     The module automatically inverts the motor outputs as needed. A check is also made to make sure "motor_lo_speed" and "motor_hi_speed" is not enabled at the same time
 */
@@ -36,9 +38,6 @@ namespace shiftreg
     bool motor_fan;
     bool gpo_0;
 
-    u8_t speedMode = 1;
-    u8_t rideMode = 1;
-
     /// @brief Initializes the shift register module
     void init()
     {
@@ -52,27 +51,21 @@ namespace shiftreg
         digitalWrite(SIPO_CLOCK, LOW);
         digitalWrite(SIPO_LATCH, LOW);
 
+        write();
+
         // Enable the output of the register
         digitalWrite(SIPO_OE, LOW);
-
-        write();
     }
 
     void set_motor_pwr(bool newValue)
     {
         motor_pwr = newValue;
         write();
-         if (newValue==false)
-        {
-            rideMode = 1;
-        }
     }
 
     void set_motor_foot_sw(bool newValue)
     {
-
         motor_foot_sw = newValue;
-
         write();
     }
 
@@ -85,58 +78,18 @@ namespace shiftreg
     void set_motor_reverse(bool newValue)
     {
         motor_reverse = newValue;
-        Serial.println("---");
-
-        Serial.println(motor_reverse);
-        Serial.println(motor_foot_sw);
-
-        // Neutral
-        if(motor_foot_sw == false){
-            rideMode = 1;
-        }
-        // Forward
-        if (motor_reverse == false && motor_foot_sw == true)
-        {
-            rideMode = 0;
-        }
-        // Reverse
-        if (motor_reverse == true && motor_foot_sw == true)
-        {
-            rideMode = 2;
-        }
-
-        Serial.println(rideMode);
-     
         write();
     }
 
     void set_motor_lo_speed(bool newValue)
     {
         motor_lo_speed = newValue;
-        if (motor_lo_speed == false && motor_hi_speed == false)
-        {
-            speedMode = 1;
-        }
-        else if (motor_lo_speed)
-        {
-
-            speedMode = 0;
-        }
         write();
     }
 
     void set_motor_hi_speed(bool newValue)
     {
         motor_hi_speed = newValue;
-        if (motor_lo_speed == false && motor_hi_speed == false)
-        {
-            speedMode = 1;
-        }
-        else if (motor_hi_speed)
-        {
-
-            speedMode = 2;
-        }
         write();
     }
 
@@ -151,15 +104,6 @@ namespace shiftreg
         gpo_0 = newValue;
         write();
     }
-
-    u8_t get_speed_mode(){
-        return speedMode;
-    }
-    u8_t get_ride_mode(){
-        return rideMode;
-    }
-
-    
 
     void write()
     {

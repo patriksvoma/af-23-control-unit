@@ -6,7 +6,10 @@
 */
 
 #include <Arduino.h>
+#include <motor.h>
+#include <shiftreg.h>
 
+// Pin definitions
 #define MOTOR_BRAKE 14
 #define MOTOR_HALL 3
 #define MOTOR_THROTTLE 27
@@ -15,18 +18,29 @@
 namespace motor
 {
     void init();
-    void setMotorBrake(uint8_t value);
-    bool getHallSignal();
+    void setRideMode(uint8_t rideMode);
+    uint8_t getRideMode();
+    void setRideSpeed(uint8_t rideSpeed);
+    uint8_t getRideSpeed();
+    void setMotorBrakeLevel(uint8_t brakeLevel);
+    void increaseMotorBrakeLevel();
+    void decreaseMotorBrakeLevel();
+    uint8_t getMotorBrakeLevel();
+    void setRawMotorBrake(uint8_t value);
+
+    bool getRawHallSignal();
     uint16_t getThrottle();
     uint32_t getRPM();
+
     void hallInterrupt();
 
     const int HALL_PULSES_PER_ROTATION = 4;
 
-    u8_t motorBrake = 0;
-
     unsigned long hall_pulse_last_us;
     unsigned long hall_pulse_previous_us;
+    uint8_t currentRideMode;
+    uint8_t currentRideSpeed;
+    uint8_t currentMotorBrakeLevel;
 
     void init()
     {
@@ -42,24 +56,123 @@ namespace motor
         analogWrite(MOTOR_BRAKE, 255);
     }
 
-    /// @brief Sets the analog brake value
-    /// @param value Value (0-255)
-
-
-    void setMotorBrake(uint8_t value)
+    /// @brief Sets the ride mode
+    /// @param rideMode 0 - Neutral, 1 - Forward, 2 - Reverse
+    void setRideMode(uint8_t rideMode)
     {
+        switch (rideMode)
+        {
+        case RIDE_MODE_FORWARD:
+            shiftreg::set_motor_foot_sw(true);
+            shiftreg::set_motor_brake_sw(false);
+            shiftreg::set_motor_reverse(false);
+            break;
+        case RIDE_MODE_NEUTRAL:
+            shiftreg::set_motor_foot_sw(false);
+            shiftreg::set_motor_brake_sw(true);
+            shiftreg::set_motor_reverse(false);
+            break;
+        case RIDE_MODE_REVERSE:
+            shiftreg::set_motor_foot_sw(true);
+            shiftreg::set_motor_brake_sw(false);
+            shiftreg::set_motor_reverse(true);
+            break;
+        default:
+            Serial.println("Trying to set invalid rideMode!");
+            return;
+        }
 
-        analogWrite(MOTOR_BRAKE, 255 - value);
-        motorBrake = value;
+        currentRideMode = rideMode;
+    }
+    
+    /// @brief Gets the current ride mode
+    /// @return 0 - Neutral, 1 - Forward, 2 - Reverse
+    uint8_t getRideMode()
+    {
+        return currentRideMode;
     }
 
-    u8_t getMotorBrake(){
-        return motorBrake;
+    /// @brief Sets the ride speed
+    /// @param rideSpeed 0 - Low, 1 - Medium, 2 - High
+    void setRideSpeed(uint8_t rideSpeed)
+    {
+        switch (rideSpeed)
+        {
+        case RIDE_SPEED_LOW:
+            shiftreg::set_motor_lo_speed(true);
+            shiftreg::set_motor_hi_speed(false);
+            break; 
+        case RIDE_SPEED_MEDIUM:
+            shiftreg::set_motor_lo_speed(false);
+            shiftreg::set_motor_hi_speed(false);
+            break;
+        case RIDE_SPEED_HIGH:
+            shiftreg::set_motor_lo_speed(false);
+            shiftreg::set_motor_hi_speed(true);
+            break;
+        default:
+            Serial.println("Trying to set invalid rideSpeed!");
+            return;
+        }
+
+        currentRideSpeed = rideSpeed;
+    }
+
+    /// @brief Gets the current ride speed
+    /// @return 0 - Neutral, 1 - Forward, 2 - Reverse
+    uint8_t getRideSpeed()
+    {
+        return currentRideSpeed;
+    }
+
+    /// @brief Sets the level of motor braking
+    /// @param brakeLevel 0-3, with 0 being no braking
+    void setMotorBrakeLevel(uint8_t brakeLevel)
+    {
+        if (brakeLevel > 3)
+        {
+            Serial.println("Trying to set invalid motor braking level");
+            return;
+        }
+
+        setRawMotorBrake(64 * brakeLevel - 1);
+
+        currentMotorBrakeLevel = brakeLevel;
+    }
+
+    /// @brief Increases the motor braking level by 1
+    void increaseMotorBrakeLevel()
+    {
+        if (getMotorBrakeLevel() == 3) return;
+
+        setMotorBrakeLevel(getMotorBrakeLevel() + 1);
+    }
+
+    /// @brief Decreases the motor braking level by 1
+    void decreaseMotorBrakeLevel()
+    {
+        if (getMotorBrakeLevel() == 0) return;
+
+        setMotorBrakeLevel(getMotorBrakeLevel() - 1);
+    }
+
+    /// @brief Gets the current motor braking level
+    /// @return 0-3, with 0 being no braking
+    uint8_t getMotorBrakeLevel()
+    {
+        return currentMotorBrakeLevel;
+    }
+
+    /// @brief Sets the analog brake value
+    /// @param value Value (0-255)
+    void setRawMotorBrake(uint8_t value)
+    {
+        analogWrite(MOTOR_BRAKE, 255 - value);
     }
 
     /// @brief Gets the current state of the hall sensor
     /// @return Bool
-    bool getHallSignal()
+    bool getRawHallSignal()
     {
         return digitalRead(MOTOR_HALL);
     }
