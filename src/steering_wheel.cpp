@@ -411,16 +411,18 @@ namespace steeringWheel
 
         sendPacket(BATTERY_PACKET_TYPE, batteryData, sizeof(batteryData));
     }
+
     uint8_t encodeDigits(uint8_t high, uint8_t low)
     {
         return ((high & 0x0F) << 4) | (low & 0x0F);
     }
+
     /// @brief Send dashboard data response
     void sendDashboardData()
     {
         debugPrintln("Sending dashboard data");
 
-        uint8_t dashData[7];
+        uint8_t dashData[15];
 
         // RPM (2 bytes, big endian)
         uint32_t rpm = motor::getRPM();
@@ -429,18 +431,27 @@ namespace steeringWheel
         dashData[0] = (rpm >> 8) & 0xFF;
         dashData[1] = rpm & 0xFF;
 
-        uint32_t temp = floor((temperature::readTemperature(0) * 100));
-        dashData[2] = (temp >> 8) & 0xFF;
-        ;
-        dashData[3] = temp & 0xFF;
+        // Speed in meters per second (float - 4 bytes)
+        float speedMps = motor::getMPS();
+        memcpy(&dashData[2], &speedMps, sizeof(float));
+
+        // Speed in kilometers per hour (float - 4 bytes)
+        float speedKmph = motor::getKMPH();
+        memcpy(&dashData[6], &speedKmph, sizeof(float));
+
+        // Temperature of the motor controller
+        uint32_t temp = floor((temperature::readTemperature(TEMP_MOTOR_CONTROLLER) * 100));
+        dashData[10] = (temp >> 8) & 0xFF;
+        dashData[11] = temp & 0xFF;
 
         debugPrintf("STempeature:%d", temp);
 
-        dashData[4] = bms::basicInfo.rsoc;
+        // Battery percentage
+        dashData[12] = bms::basicInfo.rsoc;
 
         // Status flags (1 byte)
-        dashData[5] = encodeDigits(motor::getRideSpeed(), motor::getRideMode());
-        dashData[6] = motor::getMotorBrakeLevel();
+        dashData[13] = encodeDigits(motor::getRideSpeed(), motor::getRideMode());
+        dashData[14] = motor::getMotorBrakeLevel();
 
         sendPacket(DASH_PACKET_TYPE, dashData, sizeof(dashData));
     }
