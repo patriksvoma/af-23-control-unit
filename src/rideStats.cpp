@@ -15,12 +15,10 @@ void RideStats::init() {
     storage::loadTotalDistance(&distance_driven_total_m);
 }
 
-void RideStats::update() {
-    int rpm = motor::getRPM();
-    float diff_rpm = (float)rpm * BELT_GEAR_RATIO;
-    float wheel_rpm = (float)diff_rpm * DIFF_GEAR_RATIO;
-    float speed_mps = wheel_rpm * (WHEEL_CIRCUMFERENCE_mm / 1000.0) / 60.0;
-    
+void RideStats::update()
+{
+    float speed_mps = motor::getMPS();
+
     // Distance calculation (existing code)
     if (micros() - last_distance_update_time_us > DISTANCE_UPDATE_INTERVAL_s * 1000000) {
         unsigned long time = micros();
@@ -37,7 +35,8 @@ void RideStats::update() {
         }
     }
     
-    if (rpm > max_rpm) max_rpm = rpm;
+    // Keep max RPM
+    if (motor::getRPM() > max_rpm) max_rpm = motor::getRPM();
     
     // Acceleration calculation
     unsigned long current_time = micros();

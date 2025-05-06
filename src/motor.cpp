@@ -31,10 +31,17 @@ namespace motor
     bool getRawHallSignal();
     uint16_t getThrottle();
     uint32_t getRPM();
+    float getMPS();
+    float getKMPH();
 
     void hallInterrupt();
 
-    const int HALL_PULSES_PER_ROTATION = 4;
+    const int HALL_PULSES_PER_ROTATION = 4; // Number of pulses detected by all hall sensors on one rotation of the motor
+    const float BELT_GEAR_RATIO = 0.5;      // Gear ratio of the motor belt - motor rotations : diff rotations
+    const float DIFF_GEAR_RATIO = 0.25;     // Gear ratio of the differential - diff rotations : wheel rotations
+    const int WHEEL_DIAMETER_mm = 500;      // Diameter of the back wheels in milimeters
+    // DO NOT CHANGE
+    const float WHEEL_CIRCUMFERENCE_mm = WHEEL_DIAMETER_mm * PI;
 
     unsigned long hall_pulse_last_us;
     unsigned long hall_pulse_previous_us;
@@ -84,7 +91,7 @@ namespace motor
 
         currentRideMode = rideMode;
     }
-    
+
     /// @brief Gets the current ride mode
     /// @return 0 - Neutral, 1 - Forward, 2 - Reverse
     uint8_t getRideMode()
@@ -101,7 +108,7 @@ namespace motor
         case RIDE_SPEED_LOW:
             shiftreg::set_motor_lo_speed(true);
             shiftreg::set_motor_hi_speed(false);
-            break; 
+            break;
         case RIDE_SPEED_MEDIUM:
             shiftreg::set_motor_lo_speed(false);
             shiftreg::set_motor_hi_speed(false);
@@ -143,7 +150,8 @@ namespace motor
     /// @brief Increases the motor braking level by 1
     void increaseMotorBrakeLevel()
     {
-        if (getMotorBrakeLevel() == 3) return;
+        if (getMotorBrakeLevel() == 3)
+            return;
 
         setMotorBrakeLevel(getMotorBrakeLevel() + 1);
     }
@@ -151,7 +159,8 @@ namespace motor
     /// @brief Decreases the motor braking level by 1
     void decreaseMotorBrakeLevel()
     {
-        if (getMotorBrakeLevel() == 0) return;
+        if (getMotorBrakeLevel() == 0)
+            return;
 
         setMotorBrakeLevel(getMotorBrakeLevel() - 1);
     }
@@ -183,7 +192,8 @@ namespace motor
     {
         return analogRead(MOTOR_THROTTLE);
     }
-    
+
+    /// @brief Gets the current RPM of the motor
     uint32_t getRPM()
     {
         uint32_t rpm;
@@ -197,13 +207,34 @@ namespace motor
             // Minute / time per rotation
             rpm = 60000000 / rotation_time_us;
         }
-        else rpm = 0;
+        else
+        {
+            rpm = 0;
+        }
 
         // If a hall interrupt hasn't been recieved for a second, set the RPM to zero
         // This will make sure the display will show 0 when stopped
-        if (micros() - hall_pulse_last_us > 250000) rpm = 0;
+        if (micros() - hall_pulse_last_us > 250000)
+            rpm = 0;
 
         return rpm;
+    }
+
+    /// @brief Gets the current speed in meters per second. Calculated from the motor RPM.
+    float getMPS()
+    {
+        // 1. Get the RPM at the differential input
+        float diff_rpm = (float)getRPM() * BELT_GEAR_RATIO;
+        // 2. Convert RPM from the differential to the wheel axes
+        float wheel_rpm = (float)diff_rpm * DIFF_GEAR_RATIO;
+        // 3. Calculate m/s and km/h
+        return wheel_rpm * (WHEEL_CIRCUMFERENCE_mm / 1000.0) / 60.0;
+    }
+
+    /// @brief Gets the current speed in kilometers per hour. Calculated from the motor RPM.
+    float getKMPH()
+    {
+        return getMPS() * 3.6;
     }
 
     /// @brief Hall sensor 1 interrupt

@@ -29,4 +29,6 @@ namespace motor
 
     uint16_t getThrottle();
     uint32_t getRPM();
+    float getMPS();
+    float getKMPH();
 }
