@@ -2,6 +2,7 @@
  * Steering wheel module
  * Implements packet-based protocol communication with debug output
  */
+
 #include <Arduino.h>
 #include <motor.h>
 #include <temperature.h>
