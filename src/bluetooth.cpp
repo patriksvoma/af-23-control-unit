@@ -18,7 +18,6 @@
 
 void Bluetooth::init()
 {
-
     Serial.println("Starting bluetooth");
 
     SerialBT.setName("AF-23");

@@ -35,7 +35,7 @@ namespace rtc
         URTCLIB_WIRE.begin();
 
         // Set the current time
-        //rtc.set(0, 35, 20, URTCLIB_WEEKDAY_MONDAY, 27, 1, 25);
+        // rtc.set(0, 35, 20, URTCLIB_WEEKDAY_MONDAY, 27, 1, 25);
     }
 
     /// @brief Refreshes the RTC data

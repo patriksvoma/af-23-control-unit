@@ -28,7 +28,7 @@
 #define RIDE_STATS_PACKET_TYPE 0x09
 #define LED_SPOILER_PACKET_TYPE 0x10
 
-// Debug control 
+// Debug control
 #define DEBUG_ENABLED true
 
 extern RideStats rideStats;
@@ -351,34 +351,37 @@ namespace steeringWheel
             break;
         case BRAKE_PACKET_TYPE:
             debugPrintln("Received command for changing motor brake");
-            if (data[0] == 1) motor::increaseMotorBrakeLevel();
-            else if (data[0] == 2) motor::decreaseMotorBrakeLevel();
+            if (data[0] == 1)
+                motor::increaseMotorBrakeLevel();
+            else if (data[0] == 2)
+                motor::decreaseMotorBrakeLevel();
             break;
         case TEMP_PACKET_TYPE:
-        debugPrintln("Received request for temperature data");
+            debugPrintln("Received request for temperature data");
             sendTempData();
             break;
         case RIDE_STATS_PACKET_TYPE:
-        debugPrintln("Received request for ride stats data");
-        sendRideStatsData();
-        break;
+            debugPrintln("Received request for ride stats data");
+            sendRideStatsData();
+            break;
 
         case LED_SPOILER_PACKET_TYPE:
             debugPrintln("Received command for spoiler animation");
-            if(data[0]==10){
+            if (data[0] == 10)
+            {
                 //...
                 spoilerLed::setAnimation(8);
             }
-            else if(data[0]==20){
+            else if (data[0] == 20)
+            {
                 spoilerLed::setAnimation(9);
-
             }
-            else if(data[0]==30){
+            else if (data[0] == 30)
+            {
                 spoilerLed::setAnimation(10);
-
             }
             break;
-            
+
         default:
             debugPrintf("Unknown packet type: 0x%02X\n", packetType);
             break;
@@ -456,40 +459,42 @@ namespace steeringWheel
         sendPacket(DASH_PACKET_TYPE, dashData, sizeof(dashData));
     }
 
-    void sendRideStatsData() {
+    void sendRideStatsData()
+    {
         debugPrintln("Preparing to send ride stats data");
-        
+
         // Debug print all values before sending
         debugPrintf("Current stats - Trip: %.2fm, Total: %.2fm, Max RPM: %d, Max Accel: %.2fm/s²\n",
-                   rideStats.distance_driven_trip_m,
-                   rideStats.distance_driven_total_m,
-                   rideStats.max_rpm,
-                   rideStats.max_accel_mps2);
-        
+                    rideStats.distance_driven_trip_m,
+                    rideStats.distance_driven_total_m,
+                    rideStats.max_rpm,
+                    rideStats.max_accel_mps2);
+
         debugPrintln("Best acceleration times:");
-        for (int i = 0; i < 5; i++) {
-            debugPrintf("  #%d: %.2fs\n", i+1, rideStats.best_accel_times[i]);
+        for (int i = 0; i < 5; i++)
+        {
+            debugPrintf("  #%d: %.2fs\n", i + 1, rideStats.best_accel_times[i]);
         }
-    
+
         uint8_t rideStatsData[36];
-        uint8_t* ptr = rideStatsData;
-        
+        uint8_t *ptr = rideStatsData;
+
         // Pack distance_driven_trip_m (4 bytes)
         debugPrintln("Packing trip distance...");
         float tripDistance = rideStats.distance_driven_trip_m;
         memcpy(ptr, &tripDistance, sizeof(float));
         debugPrintf("  Float value: %.2f -> Hex: %02X %02X %02X %02X\n",
-                   tripDistance, ptr[0], ptr[1], ptr[2], ptr[3]);
+                    tripDistance, ptr[0], ptr[1], ptr[2], ptr[3]);
         ptr += sizeof(float);
-        
+
         // Pack distance_driven_total_m (4 bytes)
         debugPrintln("Packing total distance...");
         float totalDistance = rideStats.distance_driven_total_m;
         memcpy(ptr, &totalDistance, sizeof(float));
         debugPrintf("  Float value: %.2f -> Hex: %02X %02X %02X %02X\n",
-                   totalDistance, ptr[0], ptr[1], ptr[2], ptr[3]);
+                    totalDistance, ptr[0], ptr[1], ptr[2], ptr[3]);
         ptr += sizeof(float);
-        
+
         // Pack max_rpm (4 bytes)
         debugPrintln("Packing max RPM...");
         uint32_t rpm = rideStats.max_rpm;
@@ -498,55 +503,60 @@ namespace steeringWheel
         *ptr++ = (rpm >> 8) & 0xFF;
         *ptr++ = rpm & 0xFF;
         debugPrintf("  RPM value: %d -> Hex: %02X %02X %02X %02X\n",
-                   rpm, *(ptr-4), *(ptr-3), *(ptr-2), *(ptr-1));
-        
+                    rpm, *(ptr - 4), *(ptr - 3), *(ptr - 2), *(ptr - 1));
+
         // Pack max_accel_mps2 (4 bytes)
         debugPrintln("Packing max acceleration...");
         float maxAccel = rideStats.max_accel_mps2;
         memcpy(ptr, &maxAccel, sizeof(float));
         debugPrintf("  Float value: %.2f -> Hex: %02X %02X %02X %02X\n",
-                   maxAccel, ptr[0], ptr[1], ptr[2], ptr[3]);
+                    maxAccel, ptr[0], ptr[1], ptr[2], ptr[3]);
         ptr += sizeof(float);
-        
+
         // Pack best_accel_times[5] (20 bytes)
         debugPrintln("Packing acceleration times...");
         // Store the first 5 best times from any thresholds
         int times_stored = 0;
-        for (int i = 0; i < 10 && times_stored < 5; i++) {
+        for (int i = 0; i < 10 && times_stored < 5; i++)
+        {
             float bestTime = rideStats.getAccelTime(i, 0);
-            if (bestTime > 0) {
+            if (bestTime > 0)
+            {
                 memcpy(ptr, &bestTime, sizeof(float));
                 debugPrintf("  Time #%d (0-%d km/h): %.2fs -> Hex: %02X %02X %02X %02X\n",
-                           times_stored+1, rideStats.getThresholdSpeed(i), 
-                           bestTime, ptr[0], ptr[1], ptr[2], ptr[3]);
+                            times_stored + 1, rideStats.getThresholdSpeed(i),
+                            bestTime, ptr[0], ptr[1], ptr[2], ptr[3]);
                 ptr += sizeof(float);
                 times_stored++;
             }
         }
-        
+
         // Fill remaining slots with zeros if we don't have 5 times
-        while (times_stored < 5) {
+        while (times_stored < 5)
+        {
             float zeroTime = 0.0f;
             memcpy(ptr, &zeroTime, sizeof(float));
             debugPrintf("  Time #%d: 0.00s (empty) -> Hex: %02X %02X %02X %02X\n",
-                       times_stored+1, ptr[0], ptr[1], ptr[2], ptr[3]);
+                        times_stored + 1, ptr[0], ptr[1], ptr[2], ptr[3]);
             ptr += sizeof(float);
             times_stored++;
         }
         // Verify total size
-        if ((ptr - rideStatsData) != 36) {
+        if ((ptr - rideStatsData) != 36)
+        {
             debugPrintf("ERROR: Incorrect packet size: %d bytes (expected 36)\n", (ptr - rideStatsData));
             return;
         }
-    
+
         // Print full packet before sending
         debugPrintln("Complete packet data:");
         debugPrint("  HEX: ");
-        for (int i = 0; i < 36; i++) {
+        for (int i = 0; i < 36; i++)
+        {
             debugPrintf("%02X ", rideStatsData[i]);
         }
         debugPrintln("");
-    
+
         debugPrintln("Sending ride stats packet...");
         sendPacket(RIDE_STATS_PACKET_TYPE, rideStatsData, sizeof(rideStatsData));
         debugPrintln("Ride stats data sent");
@@ -555,49 +565,49 @@ namespace steeringWheel
     {
         uint8_t tempData[26];
         int offset = 0;
-        
+
         bms::sendReceiveBasicInfo();
-    
+
         // Pack battery1 temperature (2 byte)
         uint16_t battery1 = bms::basicInfo.temperatures[1];
         tempData[offset++] = battery1 & 0xFF;
         tempData[offset++] = (battery1 >> 8) & 0xFF;
-        
+
         // Pack battery2 temperature (2 bytes)
         uint16_t battery2 = bms::basicInfo.temperatures[2];
         tempData[offset++] = battery2 & 0xFF;
         tempData[offset++] = (battery2 >> 8) & 0xFF;
-        
+
         // Pack outside temperature (float - 4 bytes)
         float outside = temperature::readTemperature(TEMP_OUTSIDE);
         memcpy(&tempData[offset], &outside, sizeof(float));
         offset += sizeof(float);
-        
+
         // Pack BMS temperature (2 byte)
         uint16_t bms_temp = bms::basicInfo.temperatures[0];
         tempData[offset++] = bms_temp & 0xFF;
         tempData[offset++] = (bms_temp >> 8) & 0xFF;
-        
+
         // Pack brake temperature (float - 4 bytes)
         float brake = temperature::readTemperature(TEMP_BRAKE);
         memcpy(&tempData[offset], &brake, sizeof(float));
         offset += sizeof(float);
-        
+
         // Pack motor controller temperature (float - 4 bytes)
         float motorController = temperature::readTemperature(TEMP_MOTOR_CONTROLLER);
         memcpy(&tempData[offset], &motorController, sizeof(float));
         offset += sizeof(float);
-        
+
         // Pack control unit temperature (float - 4 bytes)
         float controlUnit = temperature::readTemperature(TEMP_CONTROL_UNIT);
         memcpy(&tempData[offset], &controlUnit, sizeof(float));
         offset += sizeof(float);
-        
+
         // Pack motor temperature (float - 4 bytes)
         float motor = temperature::readTemperature(TEMP_MOTOR);
         memcpy(&tempData[offset], &motor, sizeof(float));
         offset += sizeof(float);
-        
+
         // Send the packet with all temperature data
         sendPacket(TEMP_PACKET_TYPE, tempData, sizeof(tempData));
     }

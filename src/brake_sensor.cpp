@@ -26,7 +26,7 @@ namespace brakeSensor
     uint16_t readPressureRaw()
     {
         uint16_t pressure = map(analogRead(SENSOR_PIN), 0, (1 << ADC_RES) - 1, 0, 4095);
-        
+
         return pressure;
     }
 

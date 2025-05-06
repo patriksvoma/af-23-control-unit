@@ -26,8 +26,8 @@
 #define FLASH_CONFIG_H_
 
 // Un-comment to run example with custom SPI and SS e.g with FRAM breakout
-#define CUSTOM_CS   17
-#define CUSTOM_SPI  SPI
+#define CUSTOM_CS 17
+#define CUSTOM_SPI SPI
 
 #if defined(CUSTOM_CS) && defined(CUSTOM_SPI)
 Adafruit_FlashTransport_SPI flashTransport(CUSTOM_CS, CUSTOM_SPI);

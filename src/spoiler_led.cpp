@@ -25,9 +25,8 @@ namespace spoilerLed
     void animBlinkerLeft();
     void animBlinkerRight();
     void animHazards();
-    void             animMiddleToSides();
+    void animMiddleToSides();
     void animChristmasTree();
-
 
     void modifyStripColorBy(int colorDelta);
     void modifyStripColorBy(int redDelta, int greenDelta, int blueDelta);
@@ -90,7 +89,6 @@ namespace spoilerLed
 
     void updateAnimation()
     {
-
         if (brakeSensor::readPressureRaw() > 800)
         {
             current_anim = 1;
@@ -143,8 +141,8 @@ namespace spoilerLed
             animMiddleToSides();
             break;
         case 12:
-            animChristmasTree(); break;
-
+            animChristmasTree();
+            break;
         default:
             break;
         }

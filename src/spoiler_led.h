@@ -10,5 +10,4 @@ namespace spoilerLed
     void init();
     void setAnimation(uint8_t id);
     void updateAnimation();
-
 }

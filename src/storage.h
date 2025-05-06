@@ -8,7 +8,6 @@
 namespace storage
 {
     void init();
-    uint8_t testRead();
     void saveTotalDistance(float distance_driven_total_m);
     void loadTotalDistance(float *distance_driven_total_m);
 }

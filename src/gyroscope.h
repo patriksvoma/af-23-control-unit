@@ -10,5 +10,4 @@ namespace gyroscope
     sensors_event_t getAcceleration();
     sensors_event_t getRotation();
     sensors_event_t getTemperature();
-    void loop();
 }
