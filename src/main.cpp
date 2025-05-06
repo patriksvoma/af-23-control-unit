@@ -25,6 +25,9 @@ void setup()
     Serial.begin(9600);
     delay(2000);
 
+    // TODO:    Check for a safe-mode entry into OTA mode
+    //          Maybe when the brake is fully pressed and the steering wheel is disconnected
+
     // Initialize modules
     shiftreg::init();
     motor::init();

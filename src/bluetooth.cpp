@@ -166,81 +166,81 @@ void Bluetooth::sendPacket(uint8_t packetType, uint8_t *data, size_t dataLength)
 
 void Bluetooth::readPacket()
 {
-    if (SerialBT.availableForWrite())
+    if (!SerialBT.availableForWrite())
+        return;
+
+    while (SerialBT.available() > 0)
     {
-        while (SerialBT.available() > 0)
+        uint8_t byte = SerialBT.read();
+
+        // Debug incoming byte
+        if (DEBUG_ENABLED && bufferIndex == 0)
         {
-            uint8_t byte = SerialBT.read();
+            debugPrintf("Received byte: 0x%02X\n", byte);
+        }
 
-            // Debug incoming byte
-            if (DEBUG_ENABLED && bufferIndex == 0)
-            {
-                debugPrintf("Received byte: 0x%02X\n", byte);
-            }
+        // If buffer is empty, check for start byte
+        if (bufferIndex == 0 && byte != START_BYTE)
+        {
+            debugPrintf("Skipping non-start byte: 0x%02X\n", byte);
+            continue; // Skip until we find a start byte
+        }
 
-            // If buffer is empty, check for start byte
-            if (bufferIndex == 0 && byte != START_BYTE)
-            {
-                debugPrintf("Skipping non-start byte: 0x%02X\n", byte);
-                continue; // Skip until we find a start byte
-            }
+        // Add byte to buffer
+        receiveBuffer[bufferIndex++] = byte;
 
-            // Add byte to buffer
-            receiveBuffer[bufferIndex++] = byte;
-
-            // Prevent buffer overflow
-            if (bufferIndex >= BUFFER_SIZE)
-            {
-                debugPrintln("Buffer overflow! Resetting buffer.");
-                bufferIndex = 0;
-                return;
-            }
-
-            // Minimum packet size: start(1) + type(1)  + length(1) + crc(1) = 8 bytes
-            if (bufferIndex < 4)
-            {
-                continue; // Need more bytes for a complete packet
-            }
-
-            // Check if we have complete packet
-            uint8_t dataLength = receiveBuffer[2];
-            size_t expectedPacketLength = 4 + dataLength;
-
-            if (bufferIndex < expectedPacketLength)
-            {
-                debugPrintf("Partial packet: %d/%d bytes\n", bufferIndex, expectedPacketLength);
-                continue; // Need more bytes for a complete packet
-            }
-
-            debugPrintln("Received complete packet:");
-            printHex(receiveBuffer, bufferIndex);
-
-            // Validate CRC
-            uint8_t receivedCRC = receiveBuffer[bufferIndex - 1];
-            uint8_t calculatedCRC = calculateCRC(receiveBuffer, bufferIndex - 1);
-
-            debugPrintf("CRC check: received=0x%02X, calculated=0x%02X\n", receivedCRC, calculatedCRC);
-
-            // Reset buffer index
+        // Prevent buffer overflow
+        if (bufferIndex >= BUFFER_SIZE)
+        {
+            debugPrintln("Buffer overflow! Resetting buffer.");
             bufferIndex = 0;
+            return;
+        }
 
-            if (receivedCRC == calculatedCRC)
-            {
-                // Extract packet components
-                uint8_t packetType = receiveBuffer[1];
-                uint8_t *data = &receiveBuffer[3];
+        // Minimum packet size: start(1) + type(1)  + length(1) + crc(1) = 8 bytes
+        if (bufferIndex < 4)
+        {
+            continue; // Need more bytes for a complete packet
+        }
 
-                debugPrintf("Valid packet received, type: 0x%02X, data length: %d\n", packetType, dataLength);
+        // Check if we have complete packet
+        uint8_t dataLength = receiveBuffer[2];
+        size_t expectedPacketLength = 4 + dataLength;
 
-                // Handle the packet
-                handlePacket(packetType, data, dataLength);
-                return;
-            }
-            else
-            {
-                debugPrintln("CRC mismatch, discarding packet.");
-                return;
-            }
+        if (bufferIndex < expectedPacketLength)
+        {
+            debugPrintf("Partial packet: %d/%d bytes\n", bufferIndex, expectedPacketLength);
+            continue; // Need more bytes for a complete packet
+        }
+
+        debugPrintln("Received complete packet:");
+        printHex(receiveBuffer, bufferIndex);
+
+        // Validate CRC
+        uint8_t receivedCRC = receiveBuffer[bufferIndex - 1];
+        uint8_t calculatedCRC = calculateCRC(receiveBuffer, bufferIndex - 1);
+
+        debugPrintf("CRC check: received=0x%02X, calculated=0x%02X\n", receivedCRC, calculatedCRC);
+
+        // Reset buffer index
+        bufferIndex = 0;
+
+        if (receivedCRC == calculatedCRC)
+        {
+            // Extract packet components
+            uint8_t packetType = receiveBuffer[1];
+            uint8_t *data = &receiveBuffer[3];
+
+            debugPrintf("Valid packet received, type: 0x%02X, data length: %d\n", packetType, dataLength);
+
+            // Handle the packet
+            handlePacket(packetType, data, dataLength);
+            return;
+        }
+        else
+        {
+            debugPrintln("CRC mismatch, discarding packet.");
+            return;
         }
     }
 }
