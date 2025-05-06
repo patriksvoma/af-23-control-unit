@@ -17,8 +17,13 @@
 #include <bluetooth.h>
 #include <rideStats.h>
 
+#define FAN_CHECK_DELAY 1000
+#define FAN_TEMPERATURE_THRESHOLD 30
+
 Bluetooth bluetooth;
 RideStats rideStats;
+
+uint32_t lastFanCheck;
 
 void setup()
 {
@@ -57,6 +62,23 @@ void loop()
     bluetooth.readPacket();
     rideStats.update();
     spoilerLed::updateAnimation();
+    steeringWheel::process();
+
+    // Turn on the motor controller fan if the temperature is more than the threshold
+    // Only check the temperature every X milliseconds
+    if (millis() - lastFanCheck > FAN_CHECK_DELAY)
+    {
+        if (temperature::readTemperature(TEMP_MOTOR_CONTROLLER) > FAN_TEMPERATURE_THRESHOLD)
+        {
+            shiftreg::set_motor_fan(true);
+        }
+        else
+        {
+            shiftreg::set_motor_fan(false);
+        }
+
+        lastFanCheck = millis();
+    }
 
     // TODO MAYBE RIDE HISTORY
     //  GET THE DATA
@@ -74,7 +96,6 @@ void loop()
             rp2040.reboot();
         }
     }
-    steeringWheel::process();
 
     delay(50);
 }
