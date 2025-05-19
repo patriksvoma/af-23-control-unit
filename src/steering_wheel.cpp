@@ -395,12 +395,20 @@ namespace steeringWheel
         sendPacket(ACK_PACKET_TYPE, NULL, 0);
     }
 
+    uint32_t lastBatteryUpdate;
+
     /// @brief Send battery data response
     void sendBatteryData()
     {
         debugPrintln("Sending battery data");
-        bms::sendReceiveCellVoltage();
-        bms::sendReceiveBasicInfo();
+
+        // Only update the data once a second
+        if (millis() - lastBatteryUpdate > 1000)
+        {
+            bms::sendReceiveCellVoltage();
+            bms::sendReceiveBasicInfo();
+            lastBatteryUpdate = millis();
+        }
 
         bms::cellVoltages.voltages;
         bms::basicInfo.totalVoltage;
@@ -443,7 +451,7 @@ namespace steeringWheel
         memcpy(&dashData[6], &speedKmph, sizeof(float));
 
         // Temperature of the motor controller
-        uint32_t temp = floor((temperature::readTemperature(TEMP_MOTOR_CONTROLLER) * 100));
+        uint32_t temp = 5;//uint32_t temp = floor((temperature::readTemperature(TEMP_MOTOR_CONTROLLER) * 100));
         dashData[10] = (temp >> 8) & 0xFF;
         dashData[11] = temp & 0xFF;
 

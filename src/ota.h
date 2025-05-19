@@ -3,4 +3,6 @@
 namespace ota
 {
     void enter();
+    void enterSafe();
+    void handle();
 }

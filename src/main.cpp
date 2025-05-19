@@ -16,6 +16,7 @@
 #include <storage.h>
 #include <bluetooth.h>
 #include <rideStats.h>
+#include <ota.h>
 
 #define FAN_CHECK_DELAY 1000
 #define FAN_TEMPERATURE_THRESHOLD 30
@@ -24,6 +25,7 @@ Bluetooth bluetooth;
 RideStats rideStats;
 
 uint32_t lastFanCheck;
+uint32_t startupTime;
 
 void setup()
 {
@@ -33,6 +35,47 @@ void setup()
     // TODO:    Check for a safe-mode entry into OTA mode
     //          Maybe when the brake is fully pressed and the steering wheel is disconnected
 
+    // TODO: Replace this with a safe-mode entry
+    ota::enterSafe();
+
+    // Make a delay in which OTA is available, but nothing else happens yet
+    startupTime = millis();
+    while (millis() - startupTime < 2000)
+    {
+        ota::handle();
+        delay(5);
+    }
+
+    // If the brake pedal is fully pressed and the steering wheel disconnected, a 5 second delay is made
+    // After the delay, conditions are checked again. If met, safe mode is entered.
+/*
+    const uint8_t brakeSensorPin = 26;
+    const uint8_t steeringWheelConPin = 15;
+    pinMode(brakeSensorPin, INPUT);
+    pinMode(steeringWheelConPin, INPUT);
+
+    if (analogRead(brakeSensorPin) == 255 && digitalRead(steeringWheelConPin) == HIGH)
+    {
+        Serial.println("Safe mode enter conditions met, checking again in 5 seconds");
+        delay(5000);
+
+        if (analogRead(brakeSensorPin) == 255 && digitalRead(steeringWheelConPin) == HIGH)
+        {
+            Serial.println("Entering safe mode.");
+            ota::enterSafe();
+
+            while (true)
+            {
+                ota::handle;
+                delay(50);
+            }
+        }
+        else
+        {
+            Serial.println("Safe mode conditions no longer met, continuing booting.");
+        }
+    }
+*/
     // Initialize modules
     shiftreg::init();
     motor::init();
@@ -63,6 +106,9 @@ void loop()
     rideStats.update();
     spoilerLed::updateAnimation();
     steeringWheel::process();
+
+    // Handle the OTA if necessary
+    ota::handle();
 
     // Turn on the motor controller fan if the temperature is more than the threshold
     // Only check the temperature every X milliseconds
@@ -97,5 +143,5 @@ void loop()
         }
     }
 
-    delay(50);
+    delay(10);
 }
