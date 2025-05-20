@@ -1,5 +1,8 @@
 /*
     Gyroscope module
+
+    Authors:
+    Patrik Švoma
 */
 
 #include <Adafruit_MPU6050.h>

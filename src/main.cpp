@@ -1,3 +1,11 @@
+/*
+    Main control unit program
+
+    Authors:
+    Jakub Aldorf
+    Patrik Švoma
+*/
+
 #include <Arduino.h>
 #include <SerialBT.h>
 
@@ -35,7 +43,7 @@ void setup()
     // TODO:    Check for a safe-mode entry into OTA mode
     //          Maybe when the brake is fully pressed and the steering wheel is disconnected
 
-    // TODO: Replace this with a safe-mode entry
+    // TODO: Replace this with a conditional safe-mode entry
     ota::enterSafe();
 
     // Make a delay in which OTA is available, but nothing else happens yet

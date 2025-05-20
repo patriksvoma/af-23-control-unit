@@ -1,5 +1,8 @@
 /*
     Companion app communication module
+
+    Authors:
+    Jakub Aldorf
 */
 
 #include "bluetooth.h"

@@ -3,6 +3,9 @@
     Communicates using I2C
     - RTC address: 0x68
     - EEPROM address: 0x50 (not used)
+
+    Authors:
+    Patrik Švoma
 */
 
 #include <Arduino.h>

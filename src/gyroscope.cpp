@@ -1,5 +1,8 @@
 /*
     Gyroscope module
+
+    Authors:
+    Patrik Švoma
 */
 
 #include <Wire.h>

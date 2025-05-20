@@ -1,5 +1,8 @@
 /*
     Indicator LED module
+
+    Authors:
+    Patrik Švoma
 */
 
 namespace indicatorLed

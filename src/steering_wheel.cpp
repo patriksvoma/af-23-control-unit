@@ -1,7 +1,10 @@
 /*
- * Steering wheel module
- * Implements packet-based protocol communication with debug output
- */
+    Steering wheel communication module
+    Implements packet-based protocol communication with debug output
+
+    Authors:
+    Jakub Aldorf
+*/
 
 #include <Arduino.h>
 #include <motor.h>

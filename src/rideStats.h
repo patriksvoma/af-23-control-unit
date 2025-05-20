@@ -1,3 +1,10 @@
+/*
+    Ride stats module
+
+    Authors:
+    Jakub Aldorf
+*/
+
 #ifndef RIDESTATS_HEAD
 #define RIDESTATS_HEAD
 

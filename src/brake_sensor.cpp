@@ -1,5 +1,8 @@
 /*
     Brake pressure sensor module
+
+    Authors:
+    Patrik Švoma
 */
 
 #include <Arduino.h>

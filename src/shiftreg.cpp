@@ -5,6 +5,9 @@
     THIS MODULE SHALL BE INITIALIZED BEFORE ALL OTHERS!
 
     The module automatically inverts the motor outputs as needed. A check is also made to make sure "motor_lo_speed" and "motor_hi_speed" is not enabled at the same time
+
+    Authors:
+    Patrik Švoma
 */
 
 #include <Arduino.h>

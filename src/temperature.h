@@ -1,5 +1,8 @@
 /*
     DS18B20 temperature sensor module
+
+    Authors:
+    Patrik Švoma
 */
 
 #define TEMP_MOTOR_CONTROLLER 0

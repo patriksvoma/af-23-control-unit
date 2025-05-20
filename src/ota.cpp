@@ -1,3 +1,10 @@
+/*
+    OTA update wrapper module
+
+    Authors:
+    Jakub Aldorf
+    Patrik Švoma
+*/
 
 #include "bluetooth.h"
 
@@ -19,204 +26,204 @@ extern Bluetooth bluetooth;
 
 namespace ota
 {
-  void enter();
-  void enterSafe();
-  void handle();
+    void enter();
+    void enterSafe();
+    void handle();
 
-  bool otaActive;
+    bool otaActive;
 
-  /// @brief Used when ota is enabled by the mobile app (send back the IP adress)
-  void enter()
-  {
-    Serial.begin(9600);
-    Serial.println("Booting");
-    WiFi.mode(WIFI_AP);
-
-    WiFi.softAP(ssid, password);
-    delay(2000);
-    while (WiFi.waitForConnectResult() != WL_CONNECTED)
+    /// @brief Used when ota is enabled by the mobile app (send back the IP adress)
+    void enter()
     {
-      Serial.println("Connection Failed! Rebooting...");
-      delay(5000);
-      rp2040.restart();
+        Serial.begin(9600);
+        Serial.println("Booting");
+        WiFi.mode(WIFI_AP);
+
+        WiFi.softAP(ssid, password);
+        delay(2000);
+        while (WiFi.waitForConnectResult() != WL_CONNECTED)
+        {
+            Serial.println("Connection Failed! Rebooting...");
+            delay(5000);
+            rp2040.restart();
+        }
+
+        IPAddress apIP = WiFi.softAPIP();
+
+        Serial.print("AP IP Address: ");
+        Serial.println(apIP);
+        uint8_t ip[4]{apIP[0], apIP[1], apIP[2], apIP[3]};
+        bluetooth.sendPacket(OTA_PACKET, ip, 4);
+
+        // Port defaults to 2241
+        ArduinoOTA.setPort(2241);
+
+        // Hostname defaults to pico-[ChipID]
+        // ArduinoOTA.setHostname("mypico");
+
+        // No authentication by default
+        // ArduinoOTA.setPassword("admin");
+
+        // Password can be set with it's md5 value as well
+        // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
+        // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
+
+        ArduinoOTA.onStart([]()
+        {
+            String type;
+            if (ArduinoOTA.getCommand() == U_FLASH) {
+                type = "sketch";
+            } else {  // U_FS
+                type = "filesystem";
+            }
+
+            // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+            Serial.println("Start updating " + type);
+        });
+
+        ArduinoOTA.onEnd([]()
+        {
+            Serial.println("\nEnd");
+        });
+
+        ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
+        {
+            Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+        });
+
+        ArduinoOTA.onError([](ota_error_t error)
+        {
+            Serial.printf("Error[%u]: ", error);
+            if (error == OTA_AUTH_ERROR) {
+                Serial.println("Auth Failed");
+            } else if (error == OTA_BEGIN_ERROR) {
+                Serial.println("Begin Failed");
+            } else if (error == OTA_CONNECT_ERROR) {
+                Serial.println("Connect Failed");
+            } else if (error == OTA_RECEIVE_ERROR) {
+                Serial.println("Receive Failed");
+            } else if (error == OTA_END_ERROR) {
+                Serial.println("End Failed");
+            }
+        });
+        
+        ArduinoOTA.begin();
+
+        Serial.println("Ready");
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
+
+        otaActive = true;
+
+        //u32_t otaStart = millis();
+        //while (millis() - otaStart < 120000)
+        //{
+        //  ArduinoOTA.handle();
+        //}
+
+        // Send callback on succes
+        // Send failed
     }
 
-    IPAddress apIP = WiFi.softAPIP();
-
-    Serial.print("AP IP Address: ");
-    Serial.println(apIP);
-    uint8_t ip[4]{apIP[0], apIP[1], apIP[2], apIP[3]};
-    bluetooth.sendPacket(OTA_PACKET, ip, 4);
-
-    // Port defaults to 2241
-    ArduinoOTA.setPort(2241);
-
-    // Hostname defaults to pico-[ChipID]
-    // ArduinoOTA.setHostname("mypico");
-
-    // No authentication by default
-    // ArduinoOTA.setPassword("admin");
-
-    // Password can be set with it's md5 value as well
-    // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-    // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
-
-    ArduinoOTA.onStart([]()
+    /// @brief Used when enabling OTA with safe mode (does not need bluetooth enabled). The control unit can continue working until it is stopped by ArduinoOTA
+    void enterSafe()
     {
-      String type;
-      if (ArduinoOTA.getCommand() == U_FLASH) {
-        type = "sketch";
-      } else {  // U_FS
-        type = "filesystem";
-      }
+        Serial.begin(9600);
+        Serial.println("Booting");
+        WiFi.mode(WIFI_AP);
 
-      // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-      Serial.println("Start updating " + type);
-    });
+        WiFi.softAP(ssid, password);
+        delay(2000);
+        while (WiFi.waitForConnectResult() != WL_CONNECTED)
+        {
+            Serial.println("Connection Failed! Rebooting...");
+            delay(5000);
+            rp2040.restart();
+        }
 
-    ArduinoOTA.onEnd([]()
-    {
-      Serial.println("\nEnd");
-    });
+        IPAddress apIP = WiFi.softAPIP();
 
-    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
-    {
-      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    });
+        Serial.print("AP IP Address: ");
+        Serial.println(apIP);
+        //uint8_t ip[4]{apIP[0], apIP[1], apIP[2], apIP[3]};
+        //bluetooth.sendPacket(OTA_PACKET, ip, 4);
 
-    ArduinoOTA.onError([](ota_error_t error)
-    {
-      Serial.printf("Error[%u]: ", error);
-      if (error == OTA_AUTH_ERROR) {
-        Serial.println("Auth Failed");
-      } else if (error == OTA_BEGIN_ERROR) {
-        Serial.println("Begin Failed");
-      } else if (error == OTA_CONNECT_ERROR) {
-        Serial.println("Connect Failed");
-      } else if (error == OTA_RECEIVE_ERROR) {
-        Serial.println("Receive Failed");
-      } else if (error == OTA_END_ERROR) {
-        Serial.println("End Failed");
-      }
-    });
-    
-    ArduinoOTA.begin();
+        // Port defaults to 2241
+        ArduinoOTA.setPort(2241);
 
-    Serial.println("Ready");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
+        // Hostname defaults to pico-[ChipID]
+        // ArduinoOTA.setHostname("mypico");
 
-    otaActive = true;
+        // No authentication by default
+        // ArduinoOTA.setPassword("admin");
 
-    //u32_t otaStart = millis();
-    //while (millis() - otaStart < 120000)
-    //{
-    //  ArduinoOTA.handle();
-    //}
+        // Password can be set with it's md5 value as well
+        // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
+        // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
 
-    // Send callback on succes
-    // Send failed
-  }
+        ArduinoOTA.onStart([]()
+        {
+            String type;
+            if (ArduinoOTA.getCommand() == U_FLASH) {
+                type = "sketch";
+            } else {  // U_FS
+                type = "filesystem";
+            }
 
-  /// @brief Used when enabling OTA with safe mode (does not need bluetooth enabled). The control unit can continue working until it is stopped by ArduinoOTA
-  void enterSafe()
-  {
-    Serial.begin(9600);
-    Serial.println("Booting");
-    WiFi.mode(WIFI_AP);
+            // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+            Serial.println("Start updating " + type); 
+        });
 
-    WiFi.softAP(ssid, password);
-    delay(2000);
-    while (WiFi.waitForConnectResult() != WL_CONNECTED)
-    {
-      Serial.println("Connection Failed! Rebooting...");
-      delay(5000);
-      rp2040.restart();
+        ArduinoOTA.onEnd([]()
+        {
+            Serial.println("\nEnd");
+        });
+
+        ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
+        {
+            Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+        });
+
+        ArduinoOTA.onError([](ota_error_t error)
+        {
+            Serial.printf("Error[%u]: ", error);
+            if (error == OTA_AUTH_ERROR) {
+                Serial.println("Auth Failed");
+            } else if (error == OTA_BEGIN_ERROR) {
+                Serial.println("Begin Failed");
+            } else if (error == OTA_CONNECT_ERROR) {
+                Serial.println("Connect Failed");
+            } else if (error == OTA_RECEIVE_ERROR) {
+                Serial.println("Receive Failed");
+            } else if (error == OTA_END_ERROR) {
+                Serial.println("End Failed");
+            } 
+        });
+
+        ArduinoOTA.begin();
+
+        Serial.println("Ready");
+        Serial.print("IP address: ");
+        Serial.println(WiFi.localIP());
+
+        otaActive = true;
+
+        //u32_t otaStart = millis();
+        //while (millis() - otaStart < 120000)
+        //{
+        //  ArduinoOTA.handle();
+        //}
+
+        // Send callback on succes
+        // Send failed
     }
 
-    IPAddress apIP = WiFi.softAPIP();
-
-    Serial.print("AP IP Address: ");
-    Serial.println(apIP);
-    //uint8_t ip[4]{apIP[0], apIP[1], apIP[2], apIP[3]};
-    //bluetooth.sendPacket(OTA_PACKET, ip, 4);
-
-    // Port defaults to 2241
-    ArduinoOTA.setPort(2241);
-
-    // Hostname defaults to pico-[ChipID]
-    // ArduinoOTA.setHostname("mypico");
-
-    // No authentication by default
-    // ArduinoOTA.setPassword("admin");
-
-    // Password can be set with it's md5 value as well
-    // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-    // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
-
-    ArduinoOTA.onStart([]()
+    void handle()
     {
-      String type;
-      if (ArduinoOTA.getCommand() == U_FLASH) {
-        type = "sketch";
-      } else {  // U_FS
-        type = "filesystem";
-      }
-
-      // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-      Serial.println("Start updating " + type); 
-    });
-
-    ArduinoOTA.onEnd([]()
-    {
-      Serial.println("\nEnd");
-    });
-
-    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
-    {
-      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    });
-
-    ArduinoOTA.onError([](ota_error_t error)
-    {
-      Serial.printf("Error[%u]: ", error);
-      if (error == OTA_AUTH_ERROR) {
-        Serial.println("Auth Failed");
-      } else if (error == OTA_BEGIN_ERROR) {
-        Serial.println("Begin Failed");
-      } else if (error == OTA_CONNECT_ERROR) {
-        Serial.println("Connect Failed");
-      } else if (error == OTA_RECEIVE_ERROR) {
-        Serial.println("Receive Failed");
-      } else if (error == OTA_END_ERROR) {
-        Serial.println("End Failed");
-      } 
-    });
-
-    ArduinoOTA.begin();
-
-    Serial.println("Ready");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-
-    otaActive = true;
-
-    //u32_t otaStart = millis();
-    //while (millis() - otaStart < 120000)
-    //{
-    //  ArduinoOTA.handle();
-    //}
-
-    // Send callback on succes
-    // Send failed
-  }
-
-  void handle()
-  {
-    // If OTA update is currently enabled, call the handle function
-    if (ota::otaActive)
-    {
-      ArduinoOTA.handle();
+        // If OTA update is currently enabled, call the handle function
+        if (ota::otaActive)
+        {
+            ArduinoOTA.handle();
+        }
     }
-  }
 }

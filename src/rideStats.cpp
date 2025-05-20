@@ -1,3 +1,10 @@
+/*
+    Ride stats module
+
+    Authors:
+    Jakub Aldorf
+*/
+
 #include "rideStats.h"
 #include "motor.h"
 #include "storage.h"

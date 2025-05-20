@@ -1,6 +1,10 @@
 /*
     Spoiler LED module
     Interfaces a WS2812S LED strip
+
+    Authors:
+    Jakub Aldorf
+    Patrik Švoma
 */
 
 #include <Arduino.h>
